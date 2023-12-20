@@ -8,21 +8,19 @@ import "../css/Login.css";
 
 export default function Login() {
     const navigate = useNavigate();
-    const [values, setValues] = useState({ username: "", password: "" });
+    const [values, setValues] = useState({ email: "", password: "" });
     useEffect(() => {
         async function fetchData() {
             if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY as string)) {
                 const user = await JSON.parse(localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY as string) as any);
-                if (user.isLoggedIn === true) {
-                    try {
-                        const { data } = await axios.post(userValidationRoute, { _id: user._id, username: user.username }, { withCredentials: true });
-                        if (data.isDoodleUser === true && data.isTokenValid === true) {
-                            if (!navigate) return;
-                            navigate("/");
-                        }
-                    } catch (err) {
-                        console.log(err);
+                try {
+                    const { data } = await axios.post(userValidationRoute, { doodleId: user.doodleId }, { withCredentials: true });
+                    if (data.isDoodleUser === true && data.isTokenValid === true) {
+                        if (!navigate) return;
+                        navigate("/");
                     }
+                } catch (err) {
+                    console.log(err);
                 }
             }
         }
@@ -31,17 +29,16 @@ export default function Login() {
     const handleSubmit = async (event: any) => {
         event.preventDefault();
         if (handleValidation()) {
-            const { password, username } = values;
+            const { password, email } = values;
             try {
-                const { data } = await axios.post(loginRoute, { username, password }, { withCredentials: true });
+                const { data } = await axios.post(loginRoute, { email, password }, { withCredentials: true });
                 if (data.status === true) {
                     const user = data.user;
-                    user.isLoggedIn = true;
                     localStorage.setItem(process.env.REACT_APP_LOCALHOST_KEY as string, JSON.stringify(user));
                     navigate("/");
                 }
                 else {
-                    console.log(data.msg);
+                    toast.error(data.msg);
                 }
             } catch (err) {
                 console.log(err);
@@ -49,8 +46,8 @@ export default function Login() {
         }
     };
     const handleValidation = () => {
-        const { password, username } = values;
-        if (password === "" || username === "") { toast.error("Username and password required"); return false; }
+        const { password, email } = values;
+        if (password === "" || email === "") { toast.error("Email and password required"); return false; }
         return true;
     };
     const handleChange = (event: any) => { setValues({ ...values, [event.target.name]: event.target.value }) };
@@ -58,7 +55,7 @@ export default function Login() {
         <>
             <div className="loginContainer">
                 <form className="loginForm" onSubmit={(event) => handleSubmit(event)}>
-                    <input type="text" placeholder="Username" name="username" onChange={(e) => handleChange(e)} min="3" autoComplete="off" />
+                    <input type="email" placeholder="Email" name="email" onChange={(e) => handleChange(e)} min="3" autoComplete="off" />
                     <input type="password" placeholder="Password" name="password" onChange={(e) => handleChange(e)} autoComplete="off" />
                     <button type="submit">Log In</button>
                     <span>Don't have an account? <Link className="link" to="/register">Register</Link></span>
