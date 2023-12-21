@@ -3,3 +3,7 @@ export const registerRoute = `${host}/auth/register`;
 export const loginRoute = `${host}/auth/login`;
 export const logoutRoute = `${host}/auth/logout`;
 export const userValidationRoute = `${host}/auth/validate`;
+export const createPlaygroundRoute = `${host}/playground/create`;
+export const joinPlaygroundRoute = `${host}/playground/join`;
+export const playgroundDetailsRoute = `${host}/playground/details`;
+export const playgroundValidationRoute = `${host}/playground/validate`;

@@ -98,20 +98,20 @@ module.exports.userValidation = async (req, res, next) => {
         const user = await Users.findOne({ doodleId: doodleId });
         if (!user)
             return res.status(200).json({ isDoodleUser: false, isTokenValid: false });
-        let tokenId, isVerificationDone = false;
+        let tokenId, tokenValid = false;
         jwt.verify(
             token,
             process.env.TOKEN_SECRET_KEY,
             (err, decoded) => {
                 if (err) {
-                    isVerificationDone = true;
-                    return res.status(200).json({ isDoodleUser: true, isTokenValid: false });
+                    return;
                 }
+                tokenValid = true;
                 tokenId = decoded.tokenId;
             }
         );
-        if (isVerificationDone)
-            return;
+        if (tokenValid === false)
+            return res.status(200).json({ isDoodleUser: true, isTokenValid: false });
         const session = await Sessions.findOne({ tokenId: tokenId });
         if (!session)
             return res.status(200).json({ isDoodleUser: true, isTokenValid: false });
