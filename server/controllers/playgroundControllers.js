@@ -105,3 +105,21 @@ module.exports.playgroundDetails = async (req, res, next) => {
         next(ex);
     }
 };
+
+//add message request handler
+module.exports.addMessage = async (req, res, next) => {
+    try {
+        const { playgroundId, doodleId, username, message } = req.body;
+        const token = req.cookies.token;
+        const playgroundDetails = await Playgrounds.findOne({ playgroundId: playgroundId });
+        if (!playgroundDetails)
+            return res.status(200).json({ status: false, msg: "Playground does not exist" });
+        if (await isValidRequest(doodleId, token) === false)
+            return res.status(200).json({ status: false, msg: "Request not processed" });
+        await Playgrounds.updateOne({ playgroundId: playgroundId }, { $push: { messages: { from: username, message: message } } });
+        return res.status(200).json({ status: true, msg: "Message added" });
+    }
+    catch (ex) {
+        next(ex);
+    }
+};

@@ -40,7 +40,6 @@ global.temporaryUsers = new Map();
 global.temporaryUsersId = new Map();
 io.on("connection", (socket) => {
     global.chatSocket = socket;
-    console.log(socket.id);
     socket.on("in-playground", async (payload) => {
         onlineUsers.set(`${payload.doodleId}+${payload.playgroundDetails.playgroundId}`, socket.id);
         onlineId.set(socket.id, `${payload.doodleId}+${payload.playgroundDetails.playgroundId}`);
@@ -64,5 +63,37 @@ io.on("connection", (socket) => {
         await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $push: { members: { doodleId: payload.doodleId, username: payload.username } } });
         socket.to(temporaryUsers.get(`${payload.doodleId}+${payload.playgroundId}`)).emit(
             "playground-request-approved", payload);
+    });
+
+    socket.on("disconnect", () => {
+        const Id = onlineId.get(socket.id);
+        onlineId.delete(socket.id);
+        onlineUsers.delete(Id);
+        const tempId = temporaryUsersId.get(socket.id);
+        temporaryUsersId.delete(socket.id);
+        temporaryUsers.delete(tempId);
+        socket.to(socketIdToPlayground.get(socket.id)).emit(
+            "playground-update");
+        socketIdToPlayground.delete(socket.id);
+    });
+
+    socket.on("send-start-drawing", async (payload) => {
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-start-drawing", payload);
+    });
+
+    socket.on("send-end-drawing", async (payload) => {
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-end-drawing", payload);
+    });
+
+    socket.on("send-draw", async (payload) => {
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-draw", payload);
+    });
+
+    socket.on("send-message", async (payload) => {
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-message", payload);
     });
 });

@@ -1,0 +1,16 @@
+#membersBoxContainer {
+    width: 90%;
+    height: 90%;
+    overflow: scroll;
+}
+
+.memberBox {
+    background-color: #FFFF;
+    border-radius: 8px;
+    height: 15%;
+    display: flex;
+    align-items: center;
+    padding: 2%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+}

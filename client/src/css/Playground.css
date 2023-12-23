@@ -25,8 +25,115 @@
 }
 
 #playgroundContainerFlex {
+    width: 100vw;
+    height: 100vh;
+    background-color: #DEE4E7;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
+}
+
+#drawingBox {
+    width: calc(1.35 * 100vh);
+    height: 100%;
+    background-color: rgb(255, 255, 255);
+    transition: 1s ease-in-out;
+    scale: 100%;
+    border-radius: 16px;
+}
+
+#drawingBox:hover {
+    scale: 100%;
+}
+
+#sideBar {
+    width: calc(100vw - 1.35 * 100vh);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#membersContainer {
+    width: 100%;
+    height: 50%;
+    min-height: 50%;
+    background-color: #F2F2F2;
+    transition: 0.2s ease-in-out;
+    scale: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: hidden;
+    border-radius: 16px;
+    box-sizing: border-box;
+    padding-top: 4%;
+    padding-bottom: 4%;
+}
+
+#membersTitleBox {
+    width: 90%;
+    height: 10%;
+    font-size: x-large;
+    color: #455d7a;
+    border-style: none none solid none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#membersTitle {
+    margin: 0px;
+    cursor: default;
+}
+
+#membersSettingIcon {
+    width: auto;
+    height: 80%;
+    fill: #455d7a;
+    cursor: pointer;
+}
+
+#chatContainer {
+    width: 100%;
+    height: 50%;
+    background-color: #F2F2F2;
+    transition: 0.2s ease-in-out;
+    scale: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 16px;
+    box-sizing: border-box;
+    padding-top: 4%;
+    padding-bottom: 4%;
+}
+
+#chatTitleBox {
+    width: 90%;
+    height: 10%;
+    font-size: x-large;
+    color: #455d7a;
+    border-style: none none solid none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#chatTitle {
+    margin: 0px;
+    cursor: default;
+}
+
+#chatSettingIcon {
+    width: auto;
+    height: 80%;
+    fill: #455d7a;
+    cursor: pointer;
 }

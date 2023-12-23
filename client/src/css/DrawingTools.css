@@ -1,0 +1,34 @@
+#drawingToolsContainer {
+    width: 5%;
+    height: 50%;
+    position: absolute;
+    top: 25%;
+    background-color: #F2F2F2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    margin: 8px;
+    z-index: 2;
+}
+
+.drawingToolBox{
+    width: 100%;
+    height: 8%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drawingToolIcon {
+    width: 80%;
+    height: 80%;
+    fill: #455d7a;
+    transition: 0.2s ease-in-out;
+}
+
+.drawingToolIcon:hover {
+    width: 90%;
+    height: 90%;
+}
