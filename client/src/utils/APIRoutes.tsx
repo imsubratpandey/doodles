@@ -7,4 +7,5 @@ export const createPlaygroundRoute = `${host}/playground/create`;
 export const joinPlaygroundRoute = `${host}/playground/join`;
 export const playgroundDetailsRoute = `${host}/playground/details`;
 export const playgroundValidationRoute = `${host}/playground/validate`;
-export const addMessageRoute = `${host}/playground/addMessage`;
+export const addMessageRoute = `${host}/playground/message`;
+export const gameManagerRoute = `${host}/playground/manager`;

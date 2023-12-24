@@ -40,7 +40,7 @@ module.exports.createPlayground = async (req, res, next) => {
         if (await isValidRequest(doodleId, token) === false)
             return res.status(200).json({ status: false, msg: "Request not processed" });
         const user = await Users.findOne({ doodleId: doodleId });
-        await Playgrounds.insertOne({ createdAt: new Date(), owner: doodleId, playgroundId: playgroundId, gameInProgress: false, members: [{ doodleId: doodleId, username: user.username }], banMembers: [], messages: [] });
+        await Playgrounds.insertOne({ createdAt: new Date(), owner: doodleId, playgroundId: playgroundId, gameInProgress: false, members: [{ doodleId: doodleId, username: user.username, active: false }], banMembers: [], messages: [] });
         return res.status(200).json({ status: true, playgroundId: playgroundId, msg: "Playground created" });
     }
     catch (ex) {
@@ -77,10 +77,10 @@ module.exports.playgroundValidation = async (req, res, next) => {
             return res.status(200).json({ status: false, validated: false, msg: "Playground does not exist" });
         if (await isValidRequest(doodleId, token) === false)
             return res.status(200).json({ status: false, validated: false, msg: "Request not processed" });
-        if (playground.gameInProgress === true)
-            return res.status(200).json({ status: false, validated: false, msg: "Game is already started" });
         if (playground.owner === doodleId || playground.members.filter(element => element.doodleId === doodleId).length > 0)
             return res.status(200).json({ status: true, validated: true, msg: "Authorization not required" });
+        if (playground.gameInProgress === true)
+            return res.status(200).json({ status: false, validated: false, msg: "Game is already started" });
         return res.status(200).json({ status: true, validated: false, msg: "Authorization required" });
     }
     catch (ex) {
@@ -111,13 +111,33 @@ module.exports.addMessage = async (req, res, next) => {
     try {
         const { playgroundId, doodleId, username, message } = req.body;
         const token = req.cookies.token;
-        const playgroundDetails = await Playgrounds.findOne({ playgroundId: playgroundId });
-        if (!playgroundDetails)
+        const playground = await Playgrounds.findOne({ playgroundId: playgroundId });
+        if (!playground)
             return res.status(200).json({ status: false, msg: "Playground does not exist" });
         if (await isValidRequest(doodleId, token) === false)
             return res.status(200).json({ status: false, msg: "Request not processed" });
         await Playgrounds.updateOne({ playgroundId: playgroundId }, { $push: { messages: { from: username, message: message } } });
         return res.status(200).json({ status: true, msg: "Message added" });
+    }
+    catch (ex) {
+        next(ex);
+    }
+};
+
+// game manager request handler
+module.exports.gameManager = async (req, res, next) => {
+    try {
+        const { playgroundId, doodleId } = req.body;
+        const token = req.cookies.token;
+        const playground = await Playgrounds.findOne({ playgroundId: playgroundId });
+        if (!playground)
+            return res.status(200).json({ status: false, msg: "Playground does not exist" });
+        if (await isValidRequest(doodleId, token) === false)
+            return res.status(200).json({ status: false, msg: "Request not processed" });
+        if (playground.owner !== doodleId || playground.members.filter(element => element.doodleId === doodleId)[0].active === false)
+            return res.status(200).json({ status: false, msg: "Check your network connection" });
+        await Playgrounds.updateOne({ playgroundId: playgroundId }, { $set: { gameInProgress: true } });
+        return res.status(200).json({ status: true, msg: "Game started" });
     }
     catch (ex) {
         next(ex);

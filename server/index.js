@@ -38,14 +38,19 @@ global.onlineId = new Map();
 global.socketIdToPlayground = new Map();
 global.temporaryUsers = new Map();
 global.temporaryUsersId = new Map();
+global.playgroundWords = new Map();
 io.on("connection", (socket) => {
     global.chatSocket = socket;
     socket.on("in-playground", async (payload) => {
-        onlineUsers.set(`${payload.doodleId}+${payload.playgroundDetails.playgroundId}`, socket.id);
-        onlineId.set(socket.id, `${payload.doodleId}+${payload.playgroundDetails.playgroundId}`);
-        socketIdToPlayground.set(socket.id, `${payload.playgroundDetails.owner}+${payload.playgroundDetails.playgroundId}`);
-        await socket.join(`${payload.playgroundDetails.owner}+${payload.playgroundDetails.playgroundId}`);
-        socket.to(`${payload.playgroundDetails.owner}+${payload.playgroundDetails.playgroundId}`).emit(
+        const playground = await Playgrounds.findOne({ playgroundId: payload.playgroundId });
+        if (!playground)
+            return;
+        await Playgrounds.updateOne({ playgroundId: payload.playgroundId, "members.doodleId": payload.doodleId }, { $set: { "members.$[].active": true } });
+        onlineUsers.set(`${payload.doodleId}+${payload.playgroundId}`, socket.id);
+        onlineId.set(socket.id, `${payload.doodleId}+${payload.playgroundId}`);
+        socketIdToPlayground.set(socket.id, `${payload.owner}+${payload.playgroundId}`);
+        await socket.join(`${payload.owner}+${payload.playgroundId}`);
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
             "playground-update");
     });
 
@@ -65,8 +70,16 @@ io.on("connection", (socket) => {
             "playground-request-approved", payload);
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
         const Id = onlineId.get(socket.id);
+        if (Id) {
+            const Ids = Id.split('+');
+            const doodleId = Ids[0], playgroundId = Ids[1];
+            const playground = await Playgrounds.findOne({ playgroundId: playgroundId });
+            if (playground) {
+                await Playgrounds.updateOne({ playgroundId: playgroundId, "members.doodleId": doodleId }, { $set: { "members.$[].active": false } });
+            }
+        }
         onlineId.delete(socket.id);
         onlineUsers.delete(Id);
         const tempId = temporaryUsersId.get(socket.id);
@@ -75,6 +88,30 @@ io.on("connection", (socket) => {
         socket.to(socketIdToPlayground.get(socket.id)).emit(
             "playground-update");
         socketIdToPlayground.delete(socket.id);
+    });
+
+    socket.on("send-game-started", async (payload) => {
+        await socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-game-started");
+        await new Promise(res => setTimeout(res, 5000));
+        for (i = 0; i < payload.members.length; i++) {
+            const playground = await Playgrounds.findOne({ playgroundId: payload.playgroundId });
+            if (playground.members[i].active === false) {
+                continue;
+            }
+            const drawerWords = ["apple", "phone", "robot"];
+            playgroundWords.set(payload.playgroundId, drawerWords[0]);
+            await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
+                "recieve-choose-a-word", { drawer: playground.members[i], drawerWords: drawerWords });
+            await new Promise(res => setTimeout(res, 10000));
+            await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
+                "recieve-canvas-enable", { drawer: playground.members[i], drawerWord: playgroundWords.get(payload.playgroundId) });
+            await new Promise(res => setTimeout(res, 30000));
+        }
+    });
+
+    socket.on("send-set-word", async (payload) => {
+        playgroundWords.set(payload.playgroundId, payload.drawerWord);
     });
 
     socket.on("send-start-drawing", async (payload) => {
@@ -90,6 +127,11 @@ io.on("connection", (socket) => {
     socket.on("send-draw", async (payload) => {
         socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
             "recieve-draw", payload);
+    });
+
+    socket.on("send-flood-fill", async (payload) => {
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-flood-fill", payload);
     });
 
     socket.on("send-message", async (payload) => {

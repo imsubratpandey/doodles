@@ -6,12 +6,13 @@ interface Props {
     width: number | undefined;
     height: number | undefined
   },
+  canDraw: boolean,
   selectedTool: string,
   socketConnection: any,
   playgroundDetails: any
 }
 
-export default function Canvas({ dimension, selectedTool, socketConnection, playgroundDetails }: Props) {
+export default function Canvas({ dimension, canDraw, selectedTool, socketConnection, playgroundDetails }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const [user, setUser] = useState<any>();
@@ -156,6 +157,56 @@ export default function Canvas({ dimension, selectedTool, socketConnection, play
             }
           }
         });
+        socketConnection.on("recieve-flood-fill", async (payload: any) => {
+          if (ctxRef.current) {
+            const x = payload.x, y = payload.y;
+            const imageData: ImageData = ctxRef.current.getImageData(0, 0, ctxRef.current.canvas.width, ctxRef.current.canvas.height);
+            const pixelData: { width: number, height: number, data: Uint32Array } = {
+              width: imageData.width,
+              height: imageData.height,
+              data: new Uint32Array(imageData.data.buffer),
+            };
+            const targetColor: number = getPixel(pixelData, x, y);
+            if (targetColor !== fillColor) {
+              addSpan(x, x, y, 0);
+              while (spansToCheck.length > 0) {
+                const { left, right, y, direction } = spansToCheck.pop()!;
+                let l: number = left;
+                for (; ;) {
+                  --l;
+                  const color: number = getPixel(pixelData, l, y);
+                  if (color !== targetColor) {
+                    break;
+                  }
+                }
+                ++l;
+                let r: number = right;
+                for (; ;) {
+                  ++r;
+                  const color: number = getPixel(pixelData, r, y);
+                  if (color !== targetColor) {
+                    break;
+                  }
+                }
+                const lineOffset: number = y * pixelData.width;
+                pixelData.data.fill(fillColor, lineOffset + l, lineOffset + r);
+                if (direction <= 0) {
+                  checkSpan(l, r, y - 1, -1, pixelData, targetColor);
+                } else {
+                  checkSpan(l, left, y - 1, -1, pixelData, targetColor);
+                  checkSpan(right, r, y - 1, -1, pixelData, targetColor);
+                }
+                if (direction >= 0) {
+                  checkSpan(l, r, y + 1, +1, pixelData, targetColor);
+                } else {
+                  checkSpan(l, left, y + 1, +1, pixelData, targetColor);
+                  checkSpan(right, r, y + 1, +1, pixelData, targetColor);
+                }
+              }
+              ctxRef.current.putImageData(imageData, 0, 0);
+            }
+          }
+        });
       }
     }
     fetchData();
@@ -273,7 +324,7 @@ export default function Canvas({ dimension, selectedTool, socketConnection, play
     }
   };
   const startDrawing = (e: any) => {
-    if (canvasRef.current && ctxRef.current) {
+    if (canvasRef.current && ctxRef.current && canDraw === true) {
       const payload = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
       socketConnection.emit("send-start-drawing", payload);
       setCoordinate([e.nativeEvent.offsetX, e.nativeEvent.offsetY]);
@@ -287,7 +338,7 @@ export default function Canvas({ dimension, selectedTool, socketConnection, play
     }
   };
   const endDrawing = () => {
-    if (canvasRef.current && ctxRef.current) {
+    if (canvasRef.current && ctxRef.current && canDraw === true) {
       const payload = { owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
       socketConnection.emit("send-end-drawing", payload);
       ctxRef.current.closePath();
@@ -295,7 +346,7 @@ export default function Canvas({ dimension, selectedTool, socketConnection, play
     }
   }
   const draw = (e: any) => {
-    if (canvasRef.current && ctxRef.current && snapshot) {
+    if (canvasRef.current && ctxRef.current && snapshot && canDraw === true) {
       if (!isDrawing) {
         return;
       }
@@ -372,7 +423,9 @@ export default function Canvas({ dimension, selectedTool, socketConnection, play
     }
   }
   const floodFill = (e: any) => {
-    if (ctxRef.current && selectedTool === "floodfill") {
+    if (ctxRef.current && selectedTool === "floodfill" && canDraw === true) {
+      const payload = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
+      socketConnection.emit("send-flood-fill", payload);
       const x = e.nativeEvent.offsetX, y = e.nativeEvent.offsetY;
       const imageData: ImageData = ctxRef.current.getImageData(0, 0, ctxRef.current.canvas.width, ctxRef.current.canvas.height);
       const pixelData: { width: number, height: number, data: Uint32Array } = {

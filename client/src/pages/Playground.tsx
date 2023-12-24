@@ -9,6 +9,7 @@ import Members from "../components/Members";
 import ChatBox from "../components/ChatBox";
 import DrawingTools from "../components/DrawingTools";
 import "../css/Playground.css";
+import Manager from '../components/Manager';
 
 export default function Playground() {
     const socket = useRef<Socket>();
@@ -23,6 +24,12 @@ export default function Playground() {
     const [playgroundMessages, setPlaygroundMessages] = useState<{ from: string, message: string }[]>([]);
     const [selectedTool, setSelectedTool] = useState<string>("freehand");
     const [drawingCanvasBoxDimension, setDrawingCanvasBoxDimension] = useState<{ width: number | undefined; height: number | undefined }>({ width: undefined, height: undefined });
+    const [inGame, setInGame] = useState<boolean>(false);
+    const [displayMessage, setDisplayMessage] = useState<string>("Loading");
+    const [drawerWords, setDrawerWords] = useState<string[]>([]);
+    const [drawerWord, setDrawerWord] = useState<string>("");
+    const [canDraw, setCanDraw] = useState<boolean>(false);
+    const [showCanvas, setShowCanvas] = useState<boolean>(false);
     useEffect(() => {
         setDrawingCanvasBoxDimension({ width: drawingCanvasBoxRef.current?.offsetWidth, height: drawingCanvasBoxRef.current?.offsetHeight });
     }, [showPlaygroundLoadingWindow, drawingCanvasBoxRef]);
@@ -35,9 +42,9 @@ export default function Playground() {
                     setPlaygroundDetails(data.playgroundDetails);
                     setPlaygroundMessages(data.playgroundDetails.messages);
                     socket.current = io(host);
-                    socket.current.emit("in-playground", { playgroundDetails: data.playgroundDetails, doodleId: user.doodleId });
+                    socket.current.emit("in-playground", { owner: data.playgroundDetails.owner, playgroundId: data.playgroundDetails.playgroundId, doodleId: user.doodleId });
                     socket.current.on("playground-update", async () => {
-                        const { data } = await axios.post(`${playgroundDetailsRoute}`, { playgroundId: playgroundId, doodleId: user.doodleId, username: user.username }, {withCredentials: true});
+                        const { data } = await axios.post(`${playgroundDetailsRoute}`, { playgroundId: playgroundId, doodleId: user.doodleId, username: user.username }, { withCredentials: true });
                         if (data.status === true)
                             setPlaygroundDetails(data.playgroundDetails);
                     });
@@ -56,6 +63,16 @@ export default function Playground() {
                                 </div>
                             </div>);
                     });
+                    socket.current.on("recieve-canvas-enable", async (payload) => {
+                        setCanDraw(false);
+                        setShowCanvas(true);
+                        setDrawerWords([]);
+                        setDisplayMessage("");
+                        if (payload.drawer.doodleId === user.doodleId) {
+                            setDrawerWord(payload.drawerWord);
+                            setCanDraw(true);
+                        }
+                    })
                     setShowPlaygroundLoadingWindow(false);
                 }
                 else {
@@ -118,15 +135,32 @@ export default function Playground() {
             </div>
             <div id={(showPlaygroundLoadingWindow === false) ? "playgroundContainerFlex" : "playgroundContainerNone"}>
                 <div id="drawingBox" ref={drawingCanvasBoxRef}>
-                    <DrawingTools selectedTool={selectedTool} setSelectedTool={setSelectedTool} />
                     {
-                        (1) ?
+                        (showCanvas === true) ?
                             <>
-                                <Canvas dimension={{ width: drawingCanvasBoxDimension.width, height: drawingCanvasBoxDimension.height }} selectedTool={selectedTool} socketConnection={socket.current} playgroundDetails={playgroundDetails} />
+                                {
+                                    (canDraw === true) ?
+                                        <>
+                                            <DrawingTools selectedTool={selectedTool} setSelectedTool={setSelectedTool} />
+                                        </>
+                                        :
+                                        <></>
+                                }
+                                {
+                                    (showCanvas === true) ?
+                                        <>
+                                            <Canvas dimension={{ width: drawingCanvasBoxDimension.width, height: drawingCanvasBoxDimension.height }} canDraw={canDraw} selectedTool={selectedTool} socketConnection={socket.current} playgroundDetails={playgroundDetails} />
+                                        </>
+                                        :
+                                        <>
+                                            Loading Canvas
+                                        </>
+                                }
+
                             </>
                             :
                             <>
-                                Loading Canvas
+                                <Manager toast={toast} inGame={inGame} setInGame={setInGame} displayMessage={displayMessage} setDisplayMessage={setDisplayMessage} drawerWords={drawerWords} setDrawerWords={setDrawerWords} playgroundDetails={playgroundDetails} socketConnection={socket.current} />
                             </>
                     }
                 </div>
