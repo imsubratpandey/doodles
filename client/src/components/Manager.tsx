@@ -7,15 +7,17 @@ interface Props {
     toast: any,
     inGame: boolean,
     setInGame: any,
+    setShowCanvas: any,
     displayMessage: string,
     setDisplayMessage: any,
+    setDrawer: any,
     drawerWords: string[],
     setDrawerWords: any,
     playgroundDetails: any,
     socketConnection: any
 }
 
-export default function Manager({ toast, inGame, setInGame, displayMessage, setDisplayMessage, drawerWords, setDrawerWords, playgroundDetails, socketConnection }: Props) {
+export default function Manager({ toast, inGame, setInGame, setShowCanvas, displayMessage, setDisplayMessage, setDrawer, drawerWords, setDrawerWords, playgroundDetails, socketConnection }: Props) {
     const [user, setUser] = useState<any>();
     useEffect(() => {
         async function fetchData() {
@@ -29,12 +31,19 @@ export default function Manager({ toast, inGame, setInGame, displayMessage, setD
                     if (payload.drawer.doodleId === user.doodleId) {
                         setDrawerWords(payload.drawerWords);
                     }
+                    setShowCanvas(false);
+                    setDrawer(payload.drawer);
                     setDisplayMessage(`${payload.drawer.username} is choosing a word`);
+                });
+                socketConnection.on("recieve-game-ended", async (payload: any) => {
+                    setDisplayMessage("Loading");
+                    setInGame(false);
+                    setShowCanvas(false);
                 });
             }
         }
         fetchData();
-    }, [socketConnection, setInGame, setDisplayMessage, setDrawerWords]);
+    }, [socketConnection, setInGame, setDisplayMessage, setDrawer, setDrawerWords, setShowCanvas]);
     const startGame = async () => {
         if (user) {
             const { data } = await axios.post(gameManagerRoute, { playgroundId: playgroundDetails.playgroundId, doodleId: user.doodleId }, { withCredentials: true });

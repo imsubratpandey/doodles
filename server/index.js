@@ -65,7 +65,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("approve-playground-request", async (payload) => {
-        await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $push: { members: { doodleId: payload.doodleId, username: payload.username } } });
+        await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $push: { members: { doodleId: payload.doodleId, username: payload.username, score: 0, totalScore: 0 } } });
         socket.to(temporaryUsers.get(`${payload.doodleId}+${payload.playgroundId}`)).emit(
             "playground-request-approved", payload);
     });
@@ -77,7 +77,7 @@ io.on("connection", (socket) => {
             const doodleId = Ids[0], playgroundId = Ids[1];
             const playground = await Playgrounds.findOne({ playgroundId: playgroundId });
             if (playground) {
-                await Playgrounds.updateOne({ playgroundId: playgroundId, "members.doodleId": doodleId }, { $set: { "members.$[].active": false } });
+                await Playgrounds.updateOne({ playgroundId: playgroundId, "members.doodleId": doodleId }, { $set: { "members.$.active": false } });
             }
         }
         onlineId.delete(socket.id);
@@ -91,6 +91,10 @@ io.on("connection", (socket) => {
     });
 
     socket.on("send-game-started", async (payload) => {
+        const playground = await Playgrounds.findOne({ playgroundId: payload.playgroundId });
+        if (!playground)
+            return;
+        await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { gameInProgress: true } });
         await socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
             "recieve-game-started");
         await new Promise(res => setTimeout(res, 5000));
@@ -103,11 +107,17 @@ io.on("connection", (socket) => {
             playgroundWords.set(payload.playgroundId, drawerWords[0]);
             await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
                 "recieve-choose-a-word", { drawer: playground.members[i], drawerWords: drawerWords });
-            await new Promise(res => setTimeout(res, 10000));
+            await new Promise(res => setTimeout(res, 5000));
+            const date = new Date();
+            await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { drawerWord: playgroundWords.get(payload.playgroundId), canvasEnableTime: [date.getHours(), date.getMinutes(), date.getSeconds()] } });
             await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
                 "recieve-canvas-enable", { drawer: playground.members[i], drawerWord: playgroundWords.get(payload.playgroundId) });
             await new Promise(res => setTimeout(res, 30000));
         }
+        await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { "members.$[].score": 0 } });
+        await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-game-ended", { drawer: playground.members[i], drawerWord: playgroundWords.get(payload.playgroundId) });
+        await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { gameInProgress: false, "members.$[].score": 0, drawerWord: "" } });
     });
 
     socket.on("send-set-word", async (payload) => {

@@ -28,6 +28,16 @@ const isValidRequest = async (doodleId, token) => {
     return true;
 };
 
+const getScore = (prevTime) => {
+    const date = new Date();
+    const currentTime = [date.getHours(), date.getMinutes(), date.getSeconds()];
+    let timeDifference = (currentTime[0] * 3600 + currentTime[1] * 60 + currentTime[2]) - (prevTime[0] * 3600 + prevTime[1] * 60 + prevTime[2]);
+    if (timeDifference < 0)
+        return 100;
+    else
+        return Math.round((1 - timeDifference / 30) * 100);
+};
+
 //playground create request handler
 module.exports.createPlayground = async (req, res, next) => {
     try {
@@ -40,7 +50,7 @@ module.exports.createPlayground = async (req, res, next) => {
         if (await isValidRequest(doodleId, token) === false)
             return res.status(200).json({ status: false, msg: "Request not processed" });
         const user = await Users.findOne({ doodleId: doodleId });
-        await Playgrounds.insertOne({ createdAt: new Date(), owner: doodleId, playgroundId: playgroundId, gameInProgress: false, members: [{ doodleId: doodleId, username: user.username, active: false }], banMembers: [], messages: [] });
+        await Playgrounds.insertOne({ createdAt: new Date(), owner: doodleId, playgroundId: playgroundId, gameInProgress: false, members: [{ doodleId: doodleId, username: user.username, active: false, score: 0, totalScore: 0 }], banMembers: [], messages: [], drawerWord: "" });
         return res.status(200).json({ status: true, playgroundId: playgroundId, msg: "Playground created" });
     }
     catch (ex) {
@@ -109,15 +119,37 @@ module.exports.playgroundDetails = async (req, res, next) => {
 //add message request handler
 module.exports.addMessage = async (req, res, next) => {
     try {
-        const { playgroundId, doodleId, username, message } = req.body;
+        const { playgroundId, drawerId, doodleId, username, message } = req.body;
         const token = req.cookies.token;
         const playground = await Playgrounds.findOne({ playgroundId: playgroundId });
         if (!playground)
             return res.status(200).json({ status: false, msg: "Playground does not exist" });
         if (await isValidRequest(doodleId, token) === false)
             return res.status(200).json({ status: false, msg: "Request not processed" });
-        await Playgrounds.updateOne({ playgroundId: playgroundId }, { $push: { messages: { from: username, message: message } } });
-        return res.status(200).json({ status: true, msg: "Message added" });
+        if (doodleId !== drawerId && message === playground.drawerWord) {
+            const score = getScore(playground.canvasEnableTime);
+            const members = playground.members;
+            let prevScore, alreadyGuessed = true;
+            members.forEach((member) => {
+                if (member.doodleId === doodleId && member.score === 0) {
+                    alreadyGuessed = false;
+                    prevScore = member.totalScore;
+                }
+            });
+            if (alreadyGuessed === true) {
+                await Playgrounds.updateOne({ playgroundId: playgroundId }, { $push: { messages: { from: username, message: message } } });
+                return res.status(200).json({ status: true, guessed: false, msg: "Message added" });
+            }
+            let newScore = score + prevScore;
+            await Playgrounds.updateOne({ playgroundId: playgroundId }, { $push: { messages: { from: username, message: `${username} guessed the word` } } });
+            await Playgrounds.updateOne({ playgroundId: playgroundId, "members.doodleId": doodleId }, { $set: { "members.$.score": score, "members.$.totalScore": newScore } });
+            const playgroundUpdated = await Playgrounds.findOne({ playgroundId: playgroundId });
+            return res.status(200).json({ status: true, guessed: true, msg: "Message added", playgroundDetails: playgroundUpdated, score: score, totalScore: newScore });
+        }
+        else {
+            await Playgrounds.updateOne({ playgroundId: playgroundId }, { $push: { messages: { from: username, message: message } } });
+            return res.status(200).json({ status: true, guessed: false, msg: "Message added" });
+        }
     }
     catch (ex) {
         next(ex);

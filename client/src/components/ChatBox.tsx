@@ -4,16 +4,19 @@ import axios from "axios";
 import "../css/ChatBox.css";
 
 interface Props {
+    members: any;
     playgroundMessages: {
         from: string,
         message: string
     }[],
+    drawerDoodleId: string,
     setPlaygroundMessages: any,
     playgroundDetails: any,
+    setPlaygroundDetails: any,
     socketConnection: any
 }
 
-export default function ChatBox({ playgroundMessages, setPlaygroundMessages, playgroundDetails, socketConnection }: Props) {
+export default function ChatBox({ drawerDoodleId, members, playgroundMessages, setPlaygroundMessages, playgroundDetails, setPlaygroundDetails, socketConnection }: Props) {
     const messageRef = useRef<HTMLInputElement>(null);
     const [user, setUser] = useState<any>();
     const [values, setValues] = useState({ message: "" });
@@ -23,21 +26,42 @@ export default function ChatBox({ playgroundMessages, setPlaygroundMessages, pla
             if (socketConnection) {
                 setUser(await JSON.parse(localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY as string) as any));
                 socketConnection.on("recieve-message", async (payload: any) => {
+                    if (payload.guessed === true) {
+                        members.forEach((member: { doodleId: "string", username: string, score: number, totalScore: number }) => {
+                            if (member.doodleId === payload.doodleId) {
+                                member.score = payload.score;
+                                member.totalScore = payload.totalScore;
+                            }
+                        })
+                    }
                     setPlaygroundMessages([...playgroundMessages, { from: payload.from, message: payload.message }]);
                 });
             }
         }
         fetchData();
-    }, [socketConnection, playgroundMessages, setPlaygroundMessages]);
+    }, [members, socketConnection, playgroundMessages, setPlaygroundMessages]);
     const handleSubmit = async (event: any) => {
         event.preventDefault();
         if (handleValidation() && messageRef.current) {
-            setPlaygroundMessages([...playgroundMessages, { from: user.username, message: values.message }]);
-            messageRef.current.value = "";
             try {
-                const { data } = await axios.post(addMessageRoute, { playgroundId: playgroundDetails.playgroundId, doodleId: user.doodleId, username: user.username, message: values.message }, { withCredentials: true });
-                if (data.status === true) {
-                    const payload = { from: user.username, message: values.message, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
+                const { data } = await axios.post(addMessageRoute, { playgroundId: playgroundDetails.playgroundId, doodleId: user.doodleId, drawerId: drawerDoodleId, username: user.username, message: values.message }, { withCredentials: true });
+                if (data.status === true && data.guessed === true) {
+                    console.log(data);
+                    setPlaygroundMessages([...playgroundMessages, { from: user.username, message: `${user.username} guessed the word` }]);
+                    members.forEach((member: { doodleId: "string", username: string, score: number, totalScore: number }) => {
+                        if (member.doodleId === user.doodleId) {
+                            member.score = data.score;
+                            member.totalScore = data.totalScore;
+                        }
+                    })
+                    messageRef.current.value = "";
+                    const payload = { from: user.username, message: `${user.username} guessed the word`, guessed: true, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId, score: data.score, totalScore: data.totalScore };
+                    socketConnection.emit("send-message", payload);
+                }
+                else if (data.status === true && data.guessed === false) {
+                    setPlaygroundMessages([...playgroundMessages, { from: user.username, message: values.message }]);
+                    messageRef.current.value = "";
+                    const payload = { from: user.username, message: values.message, guessed: false, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
                     socketConnection.emit("send-message", payload);
                 }
             } catch (err) {

@@ -28,6 +28,7 @@ export default function Playground() {
     const [displayMessage, setDisplayMessage] = useState<string>("Loading");
     const [drawerWords, setDrawerWords] = useState<string[]>([]);
     const [drawerWord, setDrawerWord] = useState<string>("");
+    const [drawer, setDrawer] = useState<any>();
     const [canDraw, setCanDraw] = useState<boolean>(false);
     const [showCanvas, setShowCanvas] = useState<boolean>(false);
     useEffect(() => {
@@ -41,6 +42,7 @@ export default function Playground() {
                 if (data.status === true) {
                     setPlaygroundDetails(data.playgroundDetails);
                     setPlaygroundMessages(data.playgroundDetails.messages);
+                    setInGame(data.playgroundDetails.gameInProgress);
                     socket.current = io(host);
                     socket.current.emit("in-playground", { owner: data.playgroundDetails.owner, playgroundId: data.playgroundDetails.playgroundId, doodleId: user.doodleId });
                     socket.current.on("playground-update", async () => {
@@ -160,7 +162,7 @@ export default function Playground() {
                             </>
                             :
                             <>
-                                <Manager toast={toast} inGame={inGame} setInGame={setInGame} displayMessage={displayMessage} setDisplayMessage={setDisplayMessage} drawerWords={drawerWords} setDrawerWords={setDrawerWords} playgroundDetails={playgroundDetails} socketConnection={socket.current} />
+                                <Manager toast={toast} inGame={inGame} setInGame={setInGame} setShowCanvas={setShowCanvas} displayMessage={displayMessage} setDisplayMessage={setDisplayMessage} setDrawer={setDrawer} drawerWords={drawerWords} setDrawerWords={setDrawerWords} playgroundDetails={playgroundDetails} socketConnection={socket.current} />
                             </>
                     }
                 </div>
@@ -181,7 +183,7 @@ export default function Playground() {
                             (1) ?
                                 <>
 
-                                    <ChatBox playgroundMessages={playgroundMessages} setPlaygroundMessages={setPlaygroundMessages} playgroundDetails={playgroundDetails} socketConnection={socket.current} />
+                                    <ChatBox drawerDoodleId={drawer?.doodleId} members={playgroundDetails?.members} playgroundMessages={playgroundMessages} setPlaygroundMessages={setPlaygroundMessages} playgroundDetails={playgroundDetails} setPlaygroundDetails={setPlaygroundDetails} socketConnection={socket.current} />
                                 </>
                                 :
                                 <>
