@@ -166,6 +166,8 @@ module.exports.gameManager = async (req, res, next) => {
             return res.status(200).json({ status: false, msg: "Playground does not exist" });
         if (await isValidRequest(doodleId, token) === false)
             return res.status(200).json({ status: false, msg: "Request not processed" });
+        if (playground.members.length < 2)
+            return res.status(200).json({ status: false, msg: "Add atleast one more member to start the game" });
         if (playground.owner !== doodleId || playground.members.filter(element => element.doodleId === doodleId)[0].active === false)
             return res.status(200).json({ status: false, msg: "Check your network connection" });
         await Playgrounds.updateOne({ playgroundId: playgroundId }, { $set: { gameInProgress: true } });

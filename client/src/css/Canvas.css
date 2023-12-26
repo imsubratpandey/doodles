@@ -1,6 +1,6 @@
 #drawingCanvas {
     z-index: 1;
     position: absolute;
-    background-color: white;
+    background-color: rgb(255, 0, 0);
     border-radius: 16px;
 }

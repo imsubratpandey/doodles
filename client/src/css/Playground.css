@@ -7,17 +7,26 @@
     height: 100vh;
     display: flex;
     position: fixed;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-#playgroundLoadingButtonsNone {
-    display: none;
+#playgroundLoadingButtons {
+    display: flex;
 }
 
-#playgroundLoadingButtonsFlex {
-    display: flex;
+#playgroundLoadingWindowMessageContainer {
+    font-family: theUnseen;
+    font-size: 60px;
+
+    @media only screen and (min-width: 641px) and (max-width: 1007px) {
+        font-size: 40px;
+    }
+
+    @media only screen and (max-width: 640px) {
+        font-size: 20px;
+    }
 }
 
 #playgroundContainerNone {
@@ -29,18 +38,50 @@
     height: 100vh;
     background-color: #DEE4E7;
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: center;
+    animation: fadeInAnimation ease 0.5s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    flex-direction: row;
+
+    @media only screen and (max-width: 850px) {
+        flex-direction: column;
+        height: 100vh;
+    }
+}
+
+@keyframes fadeInAnimation {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 #drawingBox {
-    width: calc(1.35 * 100vh);
-    height: 100%;
     background-color: rgb(255, 255, 255);
     transition: 1s ease-in-out;
     scale: 100%;
     border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    width: 70%;
+
+    @media only screen and (min-width: 851px) and (max-width: 957px) {
+        width: 65%;
+    }
+
+    @media only screen and (max-width: 850px) {
+        width: 100%;
+        height: 60vh;
+    }
 }
 
 #drawingBox:hover {
@@ -48,12 +89,22 @@
 }
 
 #sideBar {
-    width: calc(100vw - 1.35 * 100vh);
-    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    height: 100%;
+    width: 30%;
+
+    @media only screen and (min-width: 851px) and (max-width: 957px) {
+        width: 35%;
+    }
+
+    @media only screen and (max-width: 850px) {
+        width: 100%;
+        height: 40vh;
+        flex-direction: row;
+    }
 }
 
 #membersContainer {
@@ -72,6 +123,10 @@
     box-sizing: border-box;
     padding-top: 4%;
     padding-bottom: 4%;
+
+    @media only screen and (max-width: 850px) {
+        height: 100%;
+    }
 }
 
 #membersTitleBox {
@@ -89,6 +144,7 @@
 #membersTitle {
     margin: 0px;
     cursor: default;
+    font-family: theUnseen;
 }
 
 #membersSettingIcon {
@@ -112,12 +168,17 @@
     box-sizing: border-box;
     padding-top: 4%;
     padding-bottom: 4%;
+
+    @media only screen and (max-width: 850px) {
+        height: 100%;
+    }
 }
 
 #chatTitleBox {
     width: 90%;
     height: 10%;
     font-size: x-large;
+    font-family: theUnseen;
     color: #455d7a;
     border-style: none none solid none;
     display: flex;
@@ -136,4 +197,208 @@
     height: 80%;
     fill: #455d7a;
     cursor: pointer;
+}
+
+.containerCircleLoadingAnimation {
+    --uib-size: 40px;
+    --uib-color: black;
+    --uib-speed: 2s;
+    --uib-bg-opacity: 0;
+    height: var(--uib-size);
+    width: var(--uib-size);
+    transform-origin: center;
+    animation: rotate var(--uib-speed) linear infinite;
+    will-change: transform;
+    overflow: visible;
+}
+
+.carCircleLoadingAnimation {
+    fill: none;
+    stroke: var(--uib-color);
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    animation: stretch calc(var(--uib-speed) * 0.75) ease-in-out infinite;
+    will-change: stroke-dasharray, stroke-dashoffset;
+    transition: stroke 0.5s ease;
+}
+
+.trackCircleLoadingAnimation {
+    fill: none;
+    stroke: var(--uib-color);
+    opacity: var(--uib-bg-opacity);
+    transition: stroke 0.5s ease;
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes stretch {
+    0% {
+        stroke-dasharray: 0, 150;
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        stroke-dasharray: 75, 150;
+        stroke-dashoffset: -25;
+    }
+
+    100% {
+        stroke-dashoffset: -100;
+    }
+}
+
+.containerRequestLoadingAnimation {
+    --uib-size: 45px;
+    --uib-color: black;
+    --uib-speed: 1.75s;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 20%;
+    justify-content: space-between;
+    width: var(--uib-size);
+    height: calc(var(--uib-size) * 0.8);
+}
+
+.cubeRequestLoadingAnimation {
+    flex-shrink: 0;
+    width: calc(var(--uib-size) * 0.2);
+    height: calc(var(--uib-size) * 0.2);
+    animation: jump var(--uib-speed) ease-in-out infinite;
+}
+
+.cube__innerRequestLoadingAnimation {
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 25%;
+    background-color: var(--uib-color);
+    transform-origin: center bottom;
+    animation: morph var(--uib-speed) ease-in-out infinite;
+    transition: background-color 0.3s ease;
+}
+
+.cubeRequestLoadingAnimation:nth-child(2) {
+    animation-delay: calc(var(--uib-speed) * -0.36);
+
+    .cube__inner {
+        animation-delay: calc(var(--uib-speed) * -0.36);
+    }
+}
+
+.cubeRequestLoadingAnimation:nth-child(3) {
+    animation-delay: calc(var(--uib-speed) * -0.2);
+
+    .cube__inner {
+        animation-delay: calc(var(--uib-speed) * -0.2);
+    }
+}
+
+@keyframes jump {
+    0% {
+        transform: translateY(0px);
+    }
+
+    30% {
+        transform: translateY(0px);
+        animation-timing-function: ease-out;
+    }
+
+    50% {
+        transform: translateY(-200%);
+        animation-timing-function: ease-in;
+    }
+
+    75% {
+        transform: translateY(0px);
+        animation-timing-function: ease-in;
+    }
+}
+
+@keyframes morph {
+    0% {
+        transform: scaleY(1);
+    }
+
+    10% {
+        transform: scaleY(1);
+    }
+
+    20%,
+    25% {
+        transform: scaleY(0.6) scaleX(1.3);
+        animation-timing-function: ease-in-out;
+    }
+
+    30% {
+        transform: scaleY(1.15) scaleX(0.9);
+        animation-timing-function: ease-in-out;
+    }
+
+    40% {
+        transform: scaleY(1);
+    }
+
+    70%,
+    85%,
+    100% {
+        transform: scaleY(1);
+    }
+
+    75% {
+        transform: scaleY(0.8) scaleX(1.2);
+    }
+}
+
+.buttonGreen {
+    margin: 10px;
+    font-family: theUnseen;
+    align-self: center;
+    background-color: #fff;
+    background-image: none;
+    background-position: 0 90%;
+    background-repeat: repeat no-repeat;
+    background-size: 4px 3px;
+    border-radius: 15px 225px 255px 15px 15px 255px 225px 15px;
+    border-style: solid;
+    border-width: 2px;
+    box-shadow: rgba(0, 0, 0, .2) 15px 28px 25px -18px;
+    box-sizing: border-box;
+    color: #41403e;
+    cursor: pointer;
+    display: inline-block;
+    line-height: 23px;
+    outline: none;
+    padding: .75rem;
+    text-decoration: none;
+    transition: all 235ms ease-in-out;
+    border-bottom-left-radius: 15px 255px;
+    border-bottom-right-radius: 225px 15px;
+    border-top-left-radius: 255px 15px;
+    border-top-right-radius: 15px 225px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    font-size: xx-large;
+
+    @media only screen and (min-width: 641px) and (max-width: 1007px) {
+        font-size: x-large;
+    }
+
+    @media only screen and (max-width: 640px) {
+        font-size: small;
+    }
+}
+
+.buttonGreen:hover {
+    box-shadow: rgba(0, 0, 0, .3) 2px 8px 8px -5px;
+    transform: translate3d(0, 2px, 0);
+}
+
+.buttonGreen:focus {
+    box-shadow: rgba(0, 0, 0, .3) 2px 8px 4px -6px;
 }

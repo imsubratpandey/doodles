@@ -97,29 +97,18 @@ export default function Manager({ toast, inGame, setInGame, setShowCanvas, displ
                             {
                                 (user?.doodleId === playgroundDetails?.owner) ?
                                     <>
-                                        {
-                                            (playgroundDetails?.members.length <= 1) ?
-                                                <>
-                                                    Add atleast one more member to start the game
-                                                    <div className="managerButtons">
-                                                        <button className="inviteButton">Copy Invite Link</button>
-                                                        <button className="inviteButton">Copy Playground Id</button>
-                                                    </div>
-                                                </>
-                                                :
-                                                <>
-                                                    Invite more members or start the game
-                                                    <div className="managerButtons">
-                                                        <button className="inviteButton">Copy Invite Link</button>
-                                                        <button className="inviteButton">Copy Playground Id</button>
-                                                        <button className="startButton" onClick={startGame}>Start</button>
-                                                    </div>
-                                                </>
-                                        }
+                                        <div className="managerButtons">
+                                            <button className="inviteButton">Copy Invite Link</button>
+                                            <button className="inviteButton">Copy Ground Id</button>
+                                            <button className="startButton" onClick={startGame}>Start Game</button>
+                                        </div>
+
                                     </>
                                     :
                                     <>
-                                        Waiting for the admin to start the game !!!
+                                        <div id="membersMessageContainer">
+                                            Waiting for the admin to start the game !!!
+                                        </div>
                                     </>
                             }
                         </>

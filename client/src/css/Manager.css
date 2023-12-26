@@ -6,3 +6,128 @@
     align-items: center;
     justify-content: center;
 }
+
+#welcomeMessageContainer {
+    font-family: theUnseen;
+    font-size: 60px;
+
+    @media only screen and (min-width: 641px) and (max-width: 1007px) {
+        font-size: 40px;
+    }
+
+    @media only screen and (max-width: 640px) {
+        font-size: 20px;
+    }
+}
+
+#membersMessageContainer {
+    font-family: theUnseen;
+    font-size: x-large;
+
+    @media only screen and (min-width: 641px) and (max-width: 1007px) {
+        font-size: medium;
+    }
+
+    @media only screen and (max-width: 640px) {
+        font-size: small;
+    }
+}
+
+.inviteButton {
+    margin: 10px;
+    font-family: theUnseen;
+    align-self: center;
+    background-color: #fff;
+    background-image: none;
+    background-position: 0 90%;
+    background-repeat: repeat no-repeat;
+    background-size: 4px 3px;
+    border-radius: 15px 225px 255px 15px 15px 255px 225px 15px;
+    border-style: solid;
+    border-width: 2px;
+    box-shadow: rgba(0, 0, 0, .2) 15px 28px 25px -18px;
+    box-sizing: border-box;
+    color: #41403e;
+    cursor: pointer;
+    display: inline-block;
+    line-height: 23px;
+    outline: none;
+    padding: .75rem;
+    text-decoration: none;
+    transition: all 235ms ease-in-out;
+    border-bottom-left-radius: 15px 255px;
+    border-bottom-right-radius: 225px 15px;
+    border-top-left-radius: 255px 15px;
+    border-top-right-radius: 15px 225px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    font-size: large;
+
+    @media only screen and (min-width: 641px) and (max-width: 1007px) {
+        font-size: medium;
+    }
+
+    @media only screen and (max-width: 640px) {
+        font-size: small;
+    }
+}
+
+.inviteButton:hover {
+    box-shadow: rgba(0, 0, 0, .3) 2px 8px 8px -5px;
+    transform: translate3d(0, 2px, 0);
+}
+
+.inviteButton:focus {
+    box-shadow: rgba(0, 0, 0, .3) 2px 8px 4px -6px;
+}
+
+
+.startButton {
+    margin: 10px;
+    font-family: theUnseen;
+    align-self: center;
+    background-color: #fff;
+    background-image: none;
+    background-position: 0 90%;
+    background-repeat: repeat no-repeat;
+    background-size: 4px 3px;
+    border-radius: 15px 225px 255px 15px 15px 255px 225px 15px;
+    border-style: solid;
+    border-width: 2px;
+    box-shadow: rgba(0, 0, 0, .2) 15px 28px 25px -18px;
+    box-sizing: border-box;
+    color: #41403e;
+    cursor: pointer;
+    display: inline-block;
+    line-height: 23px;
+    outline: none;
+    padding: .75rem;
+    text-decoration: none;
+    transition: all 235ms ease-in-out;
+    border-bottom-left-radius: 15px 255px;
+    border-bottom-right-radius: 225px 15px;
+    border-top-left-radius: 255px 15px;
+    border-top-right-radius: 15px 225px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    font-size: large;
+
+    @media only screen and (min-width: 641px) and (max-width: 1007px) {
+        font-size: medium;
+    }
+
+    @media only screen and (max-width: 640px) {
+        font-size: small;
+    }
+}
+
+.startButton:hover {
+    box-shadow: rgba(0, 0, 0, .3) 2px 8px 8px -5px;
+    transform: translate3d(0, 2px, 0);
+}
+
+.startButton:focus {
+    box-shadow: rgba(0, 0, 0, .3) 2px 8px 4px -6px;
+}

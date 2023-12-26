@@ -3,8 +3,8 @@ import "../css/Canvas.css";
 
 interface Props {
   dimension: {
-    width: number | undefined;
-    height: number | undefined
+    width: number,
+    height: number
   },
   canDraw: boolean,
   selectedTool: string,
@@ -46,11 +46,12 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
         let snap: any, coordinate: number[];
         socketConnection.on("recieve-start-drawing", async (payload: any) => {
           if (canvasRef.current && ctxRef.current) {
-            coordinate = [payload.x, payload.y];
+            coordinate = [(payload.xPercentage * dimension.width / 100), (payload.yPercentage * dimension.height / 100)];
+            console.log(coordinate);
             ctxRef.current.beginPath();
             ctxRef.current.moveTo(
-              payload.x,
-              payload.y
+              (payload.xPercentage * dimension.width / 100),
+              (payload.yPercentage * dimension.height / 100)
             );
             setIsDrawing(true);
             snap = ctxRef.current.getImageData(0, 0, canvasRef.current?.width, canvasRef.current?.height);
@@ -67,8 +68,8 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
             ctxRef.current.putImageData(snap, 0, 0);
             if (payload.selectedTool === "freehand") {
               ctxRef.current.lineTo(
-                payload.x,
-                payload.y
+                (payload.xPercentage * dimension.width / 100),
+                (payload.yPercentage * dimension.height / 100)
               );
               ctxRef.current.stroke();
             }
@@ -79,42 +80,42 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
                 coordinate[1]
               );
               ctxRef.current.lineTo(
-                payload.x,
-                payload.y
+                (payload.xPercentage * dimension.width / 100),
+                (payload.yPercentage * dimension.height / 100)
               );
               ctxRef.current.stroke();
             }
             else if (payload.selectedTool === "curve") {
               ctxRef.current.beginPath();
-              let distance = Math.sqrt(Math.pow((coordinate[0] - payload.x), 2) + Math.pow((coordinate[1] - payload.y), 2));
+              let distance = Math.sqrt(Math.pow((coordinate[0] - (payload.xPercentage * dimension.width / 100)), 2) + Math.pow((coordinate[1] - (payload.yPercentage * dimension.height / 100)), 2));
               ctxRef.current.moveTo(coordinate[0], coordinate[1]);
-              ctxRef.current.bezierCurveTo((coordinate[0] + payload.x) / 2, (coordinate[1] + payload.y) / 2 + distance, (coordinate[0] + payload.x) / 2, (coordinate[1] + payload.y) / 2 - distance, payload.x, payload.y);
+              ctxRef.current.bezierCurveTo((coordinate[0] + (payload.xPercentage * dimension.width / 100)) / 2, (coordinate[1] + (payload.yPercentage * dimension.height / 100)) / 2 + distance, (coordinate[0] + (payload.xPercentage * dimension.width / 100)) / 2, (coordinate[1] + (payload.yPercentage * dimension.height / 100)) / 2 - distance, (payload.xPercentage * dimension.width / 100), (payload.yPercentage * dimension.height / 100));
               ctxRef.current.stroke();
             }
             else if (payload.selectedTool === "square") {
               ctxRef.current.beginPath();
-              ctxRef.current.strokeRect(coordinate[0], coordinate[1], payload.x - coordinate[0], payload.x - coordinate[0]);
+              ctxRef.current.strokeRect(coordinate[0], coordinate[1], (payload.xPercentage * dimension.width / 100) - coordinate[0], (payload.xPercentage * dimension.width / 100) - coordinate[0]);
             }
             else if (payload.selectedTool === "rectangle") {
               ctxRef.current.beginPath();
               ctxRef.current.strokeRect(
-                payload.x,
-                payload.y,
-                coordinate[0] - payload.x,
-                coordinate[1] - payload.y
+                (payload.xPercentage * dimension.width / 100),
+                (payload.yPercentage * dimension.height / 100),
+                coordinate[0] - (payload.xPercentage * dimension.width / 100),
+                coordinate[1] - (payload.yPercentage * dimension.height / 100)
               );
             }
             else if (payload.selectedTool === "triangle") {
               ctxRef.current.beginPath();
               ctxRef.current.moveTo(coordinate[0], coordinate[1]);
-              ctxRef.current.lineTo(payload.x, payload.y);
-              ctxRef.current.lineTo(coordinate[0] * 2 - payload.x, payload.y);
+              ctxRef.current.lineTo((payload.xPercentage * dimension.width / 100), (payload.yPercentage * dimension.height / 100));
+              ctxRef.current.lineTo(coordinate[0] * 2 - (payload.xPercentage * dimension.width / 100), (payload.yPercentage * dimension.height / 100));
               ctxRef.current.lineTo(coordinate[0], coordinate[1]);
               ctxRef.current.stroke();
             }
             else if (payload.selectedTool === "circle") {
               ctxRef.current.beginPath();
-              let radius = Math.sqrt(Math.pow((coordinate[0] - payload.x), 2) + Math.pow((coordinate[1] - payload.y), 2));
+              let radius = Math.sqrt(Math.pow((coordinate[0] - (payload.xPercentage * dimension.width / 100)), 2) + Math.pow((coordinate[1] - (payload.yPercentage * dimension.height / 100)), 2));
               ctxRef.current.arc(coordinate[0], coordinate[1], radius, 0, 2 * Math.PI);
               ctxRef.current.stroke();
             }
@@ -123,8 +124,8 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
               ctxRef.current.ellipse(
                 coordinate[0],
                 coordinate[1],
-                Math.abs(payload.x - coordinate[0]),
-                Math.abs(payload.y - coordinate[1]),
+                Math.abs((payload.xPercentage * dimension.width / 100) - coordinate[0]),
+                Math.abs((payload.yPercentage * dimension.height / 100) - coordinate[1]),
                 0,
                 0,
                 2 * Math.PI
@@ -138,16 +139,16 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
                 coordinate[1]
               );
               ctxRef.current.lineTo(
-                payload.x - (payload.y - coordinate[1]) / Math.tan(70 * Math.PI / 180),
+                (payload.xPercentage * dimension.width / 100) - ((payload.yPercentage * dimension.height / 100) - coordinate[1]) / Math.tan(70 * Math.PI / 180),
                 coordinate[1]
               );
               ctxRef.current.lineTo(
-                payload.x,
-                payload.y
+                (payload.xPercentage * dimension.width / 100),
+                (payload.yPercentage * dimension.height / 100)
               );
               ctxRef.current.lineTo(
-                coordinate[0] - (payload.y - coordinate[1]) / Math.tan(70 * Math.PI / 180),
-                payload.y
+                coordinate[0] - ((payload.yPercentage * dimension.height / 100) - coordinate[1]) / Math.tan(70 * Math.PI / 180),
+                (payload.yPercentage * dimension.height / 100)
               );
               ctxRef.current.lineTo(
                 coordinate[0],
@@ -159,7 +160,7 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
         });
         socketConnection.on("recieve-flood-fill", async (payload: any) => {
           if (ctxRef.current) {
-            const x = payload.x, y = payload.y;
+            const x = (payload.xPercentage * dimension.width / 100), y = (payload.yPercentage * dimension.height / 100);
             const imageData: ImageData = ctxRef.current.getImageData(0, 0, ctxRef.current.canvas.width, ctxRef.current.canvas.height);
             const pixelData: { width: number, height: number, data: Uint32Array } = {
               width: imageData.width,
@@ -213,7 +214,11 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
   }, [socketConnection]);
 
 
-
+  const getDimensionPercentage = (x: number, y: number) => {
+    const xPercentage = (x / dimension.width) * 100;
+    const yPercentage = (y / dimension.height) * 100;
+    return { xPercentage, yPercentage };
+  };
   const drawLine = (x: number, y: number) => {
     if (ctxRef.current) {
       ctxRef.current.beginPath();
@@ -325,7 +330,8 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
   };
   const startDrawing = (e: any) => {
     if (canvasRef.current && ctxRef.current && canDraw === true) {
-      const payload = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
+      const { xPercentage, yPercentage } = getDimensionPercentage(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+      const payload = { xPercentage: xPercentage, yPercentage: yPercentage, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
       socketConnection.emit("send-start-drawing", payload);
       setCoordinate([e.nativeEvent.offsetX, e.nativeEvent.offsetY]);
       ctxRef.current.beginPath();
@@ -350,7 +356,8 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
       if (!isDrawing) {
         return;
       }
-      const payload = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId, selectedTool: selectedTool };
+      const { xPercentage, yPercentage } = getDimensionPercentage(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+      const payload = { xPercentage: xPercentage, yPercentage: yPercentage, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId, selectedTool: selectedTool };
       socketConnection.emit("send-draw", payload);
       ctxRef.current.putImageData(snapshot, 0, 0);
       if (selectedTool === "freehand") {
@@ -424,7 +431,8 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
   }
   const floodFill = (e: any) => {
     if (ctxRef.current && selectedTool === "floodfill" && canDraw === true) {
-      const payload = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
+      const { xPercentage, yPercentage } = getDimensionPercentage(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+      const payload = { xPercentage: xPercentage, yPercentage: yPercentage, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
       socketConnection.emit("send-flood-fill", payload);
       const x = e.nativeEvent.offsetX, y = e.nativeEvent.offsetY;
       const imageData: ImageData = ctxRef.current.getImageData(0, 0, ctxRef.current.canvas.width, ctxRef.current.canvas.height);
