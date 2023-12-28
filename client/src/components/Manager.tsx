@@ -5,6 +5,8 @@ import "../css/Manager.css";
 
 interface Props {
     toast: any,
+    countdown: number,
+    setCountdown: any,
     inGame: boolean,
     setInGame: any,
     setShowCanvas: any,
@@ -17,8 +19,10 @@ interface Props {
     socketConnection: any
 }
 
-export default function Manager({ toast, inGame, setInGame, setShowCanvas, displayMessage, setDisplayMessage, setDrawer, drawerWords, setDrawerWords, playgroundDetails, socketConnection }: Props) {
+export default function Manager({ toast, countdown, setCountdown, inGame, setInGame, setShowCanvas, displayMessage, setDisplayMessage, setDrawer, drawerWords, setDrawerWords, playgroundDetails, socketConnection }: Props) {
     const [user, setUser] = useState<any>();
+    const [drawerWordIndex, setdrawerWordIndex] = useState<number>();
+
     useEffect(() => {
         async function fetchData() {
             if (socketConnection) {
@@ -29,6 +33,7 @@ export default function Manager({ toast, inGame, setInGame, setShowCanvas, displ
                 });
                 socketConnection.on("recieve-choose-a-word", async (payload: any) => {
                     if (payload.drawer.doodleId === user.doodleId) {
+                        setCountdown(5);
                         setDrawerWords(payload.drawerWords);
                     }
                     setShowCanvas(false);
@@ -36,14 +41,14 @@ export default function Manager({ toast, inGame, setInGame, setShowCanvas, displ
                     setDisplayMessage(`${payload.drawer.username} is choosing a word`);
                 });
                 socketConnection.on("recieve-game-ended", async (payload: any) => {
-                    setDisplayMessage("Loading");
+                    setDisplayMessage("");
                     setInGame(false);
                     setShowCanvas(false);
                 });
             }
         }
         fetchData();
-    }, [socketConnection, setInGame, setDisplayMessage, setDrawer, setDrawerWords, setShowCanvas]);
+    }, [socketConnection, setInGame, setDisplayMessage, setDrawer, setCountdown, setDrawerWords, setShowCanvas]);
     const startGame = async () => {
         if (user) {
             const { data } = await axios.post(gameManagerRoute, { playgroundId: playgroundDetails.playgroundId, doodleId: user.doodleId }, { withCredentials: true });
@@ -57,7 +62,8 @@ export default function Manager({ toast, inGame, setInGame, setShowCanvas, displ
             }
         }
     };
-    const setDrawerWord = async (i: number) => {
+    const assignDrawerWord = async (i: number) => {
+        setdrawerWordIndex(i);
         const payload = { playgroundId: playgroundDetails.playgroundId, drawerWord: drawerWords[i] }
         socketConnection.emit("send-set-word", payload);
     };
@@ -71,13 +77,18 @@ export default function Manager({ toast, inGame, setInGame, setShowCanvas, displ
                                 (drawerWords.length === 3) ?
                                     <>
                                         <div id="chooseWindow">
-                                            <div id="chooseAWordTitle">
-                                                Your turn, Choose a word !!!
+                                            <div id="chooseAWordTitle" className="preventSelect">
+                                                <div>
+                                                    {countdown}
+                                                </div>
+                                                <div>
+                                                    Your turn, Choose a word !!!
+                                                </div>
                                             </div>
                                             <div id="chooseAWordContent">
                                                 {drawerWords.map((drawerWord: string, i: number) => {
                                                     return (
-                                                        <button onClick={() => setDrawerWord(i)} key={i}>{drawerWords[i]}</button>
+                                                        <button className={(drawerWordIndex === i) ? "choosedButton" : "wordChooseButtons"} onClick={() => assignDrawerWord(i)} key={i}>{drawerWords[i]}</button>
                                                     );
                                                 })}
                                             </div>
@@ -85,13 +96,27 @@ export default function Manager({ toast, inGame, setInGame, setShowCanvas, displ
                                     </>
                                     :
                                     <>
-                                        {displayMessage}
+                                        {
+                                            (displayMessage.length === 0) ?
+                                                <>
+                                                    <svg className="containerCircleLoadingAnimation" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                                                        <circle className="trackCircleLoadingAnimation" cx="20" cy="20" r="17.5" fill="none" strokeWidth="5px" pathLength="100" />
+                                                        <circle className="carCircleLoadingAnimation" cx="20" cy="20" r="17.5" fill="none" strokeWidth="5px" pathLength="100" />
+                                                    </svg>
+                                                </>
+                                                :
+                                                <>
+                                                    <div id="membersDisplayMessage" className="preventSelect">
+                                                        {displayMessage}
+                                                    </div>
+                                                </>
+                                        }
                                     </>
                             }
                         </>
                         :
                         <>
-                            <div id="welcomeMessageContainer">
+                            <div id="welcomeMessageContainer" className="preventSelect">
                                 Welcome to playground
                             </div>
                             {
@@ -106,7 +131,7 @@ export default function Manager({ toast, inGame, setInGame, setShowCanvas, displ
                                     </>
                                     :
                                     <>
-                                        <div id="membersMessageContainer">
+                                        <div id="membersMessageContainer" className="preventSelect">
                                             Waiting for the admin to start the game !!!
                                         </div>
                                     </>

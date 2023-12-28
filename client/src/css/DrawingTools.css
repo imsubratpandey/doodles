@@ -1,8 +1,9 @@
 #drawingToolsContainer {
-    width: 5%;
-    height: 50%;
+    width: 40px;
+    height: 60%;
     position: absolute;
-    top: 25%;
+    top: 20%;
+    left: 0px;
     background-color: #F2F2F2;
     display: flex;
     flex-direction: column;
@@ -11,14 +12,97 @@
     border-radius: 16px;
     margin: 8px;
     z-index: 2;
+
+    @media only screen and (min-width: 500px) and (max-width: 850px) {
+        flex-direction: row;
+        width: 60%;
+        height: 40px;
+        top: 85%;
+        left: 15%;
+    }
+
+    @media only screen and (max-width: 500px) {
+        flex-direction: row;
+        width: 90%;
+        height: 40px;
+        top: 88%;
+        left: 3%;
+    }
 }
 
-.drawingToolBox{
-    width: 100%;
-    height: 8%;
+#drawingToolsContainerNone {
+    display: none;
+}
+
+#lineWidthContainerAbsolute {
+    position: absolute;
+    bottom: 0px;
+    left: 40px;
+    width: 40px;
+    height: 100%;
+    border-radius: 16px;
+    margin: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
+
+    @media only screen and (max-width: 850px) {
+        bottom: 30px;
+        left: 0px;
+        width: 100%;
+    }
+}
+
+#lineWidthContainerNone {
+    display: none;
+}
+
+#lineOpacityContainerAbsolute {
+    position: absolute;
+    bottom: 0px;
+    left: 40px;
+    width: 40px;
+    height: 100%;
+    border-radius: 16px;
+    margin: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media only screen and (max-width: 850px) {
+        bottom: 30px;
+        left: 0px;
+        width: 100%;
+    }
+}
+
+#lineOpacityContainerNone {
+    display: none;
+}
+
+#colorPicker {
+    position: absolute;
+    border: none;
+    background-color: transparent;
+    outline: none;
+    visibility: hidden;
+}
+
+#colorPicker::-webkit-color-swatch {
+    border-radius: 100%;
+}
+
+.drawingToolBox {
+    width: 100%;
+    height: 6.7%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media only screen and (max-width: 850px) {
+        width: 6.7%;
+        height: 100%;
+    }
 }
 
 .drawingToolIcon {
@@ -31,4 +115,18 @@
 .drawingToolIcon:hover {
     width: 90%;
     height: 90%;
+}
+
+.drawingToolSlider {
+    writing-mode: vertical-lr;
+    accent-color: #455d7a;
+    width: 5%;
+    height: 95%;
+    cursor: pointer;
+
+    @media only screen and (max-width: 850px) {
+        writing-mode: horizontal-tb;
+        width: 95%;
+        height: 5%;
+    }
 }

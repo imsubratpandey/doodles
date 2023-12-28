@@ -1,17 +1,48 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import "../css/DrawingTools.css";
 
 interface Props {
+    lineWidth: number,
+    setLineWidth: any,
+    lineColor: string,
+    setLineColor: any,
+    lineOpacity: number,
+    setLineOpacity: any,
     selectedTool: string,
-    setSelectedTool: any
+    setSelectedTool: any,
+    socketConnection: any,
+    playgroundDetails: any
 }
 
-export default function DrawingTools({ selectedTool, setSelectedTool }: Props) {
+export default function DrawingTools({ lineWidth, setLineWidth, lineColor, setLineColor, lineOpacity, setLineOpacity, selectedTool, setSelectedTool, socketConnection, playgroundDetails }: Props) {
+    const colorPickerRef = useRef<any>(null);
+    const [containerSelector, setContainerSelector] = useState<string>("");
+    const changeLineWidth = (e: any) => {
+        const payload = { owner: playgroundDetails.owner, playgroundId: playgroundDetails.playgroundId, lineWidth: Math.round(e.target.value) };
+        socketConnection.emit("send-width-setting", payload);
+        setLineWidth(Math.round(e.target.value));
+    };
+    const changeLineOpacity = (e: any) => {
+        const payload = { owner: playgroundDetails.owner, playgroundId: playgroundDetails.playgroundId, lineOpacity: e.target.value / 100 };
+        socketConnection.emit("send-opacity-setting", payload);
+        setLineOpacity(e.target.value / 100);
+    };
+    const changeLineColor = (e: any) => {
+        const payload = { owner: playgroundDetails.owner, playgroundId: playgroundDetails.playgroundId, lineColor: e.target.value };
+        socketConnection.emit("send-color-setting", payload);
+        setLineColor(e.target.value);
+    };
     const setTool = (tool: string) => {
         setSelectedTool(tool);
     };
     return (
         <div id="drawingToolsContainer">
+            <div id={((containerSelector === "width") ? "lineWidthContainerAbsolute" : "lineWidthContainerNone")}>
+                <input type="range" className="drawingToolSlider" min="1" max="20" value={lineWidth} onChange={(e: any) => { changeLineWidth(e); }} />
+            </div>
+            <div id={((containerSelector === "opacity") ? "lineOpacityContainerAbsolute" : "lineOpacityContainerNone")}>
+                <input type="range" className="drawingToolSlider" min="1" max="100" value={lineOpacity * 100} onChange={(e: any) => { changeLineOpacity(e); }} />
+            </div>
             <div className="drawingToolBox">
                 <svg onClick={() => { setTool("freehand") }} className="drawingToolIcon" version="1.1" viewBox="0 0 202 232" xmlns="http://www.w3.org/2000/svg">
                     <path d="m129.16 52.59a0.74 0.74 0 0 1 0-1.05l9.38-9.4a25.36 24.82-45.1 0 1 35.48-0.45l0.14 0.14a25.36 24.82-45.1 0 1-0.32 35.49l-9.37 9.4a0.74 0.74 0 0 1-1.05 0.01l-34.26-34.14z" />
@@ -91,6 +122,35 @@ export default function DrawingTools({ selectedTool, setSelectedTool }: Props) {
                     <circle cx="157.6" cy="134.1" r="4.36" />
                 </svg>
             </div>
+            <div className="drawingToolBox">
+                <svg onClick={() => { (containerSelector === "opacity") ? setContainerSelector("") : setContainerSelector("opacity") }} className="drawingToolIcon" version="1.1" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                    <path opacity="1.000000" stroke="none" d="M 27.045 111.127 C 27.354 110.939 27.576 111.088 27.847 111.478 C 27.624 111.573 27.312 111.488 27.045 111.127 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 415.185 111.727 C 414.998 111.388 415.16 111.179 415.582 110.944 C 415.661 111.17 415.558 111.484 415.185 111.727 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 415.69 163.074 C 415.639 163.276 415.365 163.314 415.012 163.203 C 415.111 163.006 415.289 162.958 415.69 163.074 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 28.175 285.67 C 28.188 285.192 28.457 285.151 28.838 285.542 C 28.743 285.731 28.57 285.776 28.175 285.67 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 415.192 285.757 C 415.075 285.319 415.325 285.181 415.789 285.4 C 415.748 285.625 415.6 285.725 415.192 285.757 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 192.301 439.223 C 155.866 418.737 131.126 388.887 117.477 349.845 C 116.305 346.493 114.524 344.861 111.199 343.654 C 53.475 322.706 17.485 282.085 4.587 222.238 C -9.266 157.959 20.598 90.571 76.71 55.484 C 103.107 38.978 131.954 30.524 162.901 30.905 C 233.434 31.776 292.487 75.92 314.136 140.402 C 315.426 144.246 317.668 145.85 321.202 147.147 C 374.191 166.589 409.018 203.254 423.992 257.772 C 444.781 333.457 405.291 414.628 333.234 445.559 C 312.006 454.672 289.766 459.379 266.694 458.944 C 240.508 458.45 215.701 452.033 192.301 439.223 M 289.823 288.726 C 260.032 326.325 221.523 347.723 173.449 351.337 C 166.633 351.849 165.964 353.224 169.629 359.314 C 196.663 404.246 252.535 425.546 302.709 410.05 C 358.84 392.714 393.268 338.112 383.977 279.676 C 378.417 244.705 359.734 217.846 329.686 199.039 C 323.934 195.439 322.329 196.436 321.876 203.347 C 319.815 234.779 308.923 262.917 289.823 288.726 M 119.56 281.378 C 132.081 291.238 148.438 287.219 153.571 272.982 C 154.301 270.955 154.7 268.812 155.309 266.739 C 164.905 234.088 184.655 209.694 214.698 193.641 C 223.42 188.98 232.738 186.03 242.213 183.36 C 253.4 180.208 259.709 168.973 256.87 157.951 C 254.193 147.559 243.349 140.838 232.544 143.134 C 217.613 146.307 203.56 151.913 190.408 159.588 C 151.585 182.245 126.193 215.256 114.295 258.679 C 111.99 267.09 113.062 274.415 119.56 281.378 Z" />
+                </svg>
+            </div>
+            <div className="drawingToolBox">
+                <input type="color" id="colorPicker" ref={colorPickerRef} onChange={(e: any) => { changeLineColor(e); }} />
+                <svg onClick={() => { colorPickerRef.current.click(); }} className="drawingToolIcon" version="1.1" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                    <path fill={lineColor} opacity="1.000000" stroke="none" d="M 123.804 414.432 C 66.707 386.201 29.373 341.839 12.924 280.646 C -13.607 181.948 39.73 76.594 134.633 39.203 C 238.768 -1.825 353.883 45.42 399.003 147.818 C 410.426 173.743 415.698 201.037 415.923 229.323 C 416.011 240.319 416.014 251.318 415.921 262.314 C 415.75 282.604 401.231 297.223 380.92 297.358 C 359.426 297.5 337.931 297.367 316.436 297.394 C 293.571 297.423 279.306 311.628 279.258 334.407 C 279.226 349.737 279.28 365.066 279.247 380.396 C 279.18 412.159 257.269 433.78 225.56 434.149 C 197.389 434.477 169.702 432.053 143.043 422.299 C 136.659 419.963 130.444 417.167 123.804 414.432 M 173.441 388.311 C 189.545 402.593 211.765 403.723 228.362 391.103 C 244.536 378.806 249.791 356.39 240.756 338.238 C 231.592 319.826 210.675 310.4 190.721 316.264 C 158.514 325.73 149.742 365.397 173.441 388.311 M 276.275 146.269 C 276.972 147.591 277.604 148.953 278.375 150.23 C 287.161 164.773 305.5 170.693 321.051 164.03 C 336.639 157.351 345.01 139.925 340.458 123.633 C 335.206 104.833 315.843 94.28 297.349 100.138 C 278.311 106.168 269.015 125.957 276.275 146.269 M 91.69 107.309 C 81.25 117.384 77.707 129.514 82.208 143.284 C 86.432 156.208 95.741 164.113 109.249 166.198 C 123.186 168.35 134.519 163.337 142.626 151.84 C 152.274 138.159 150.023 119.052 137.78 107.689 C 124.967 95.796 106.852 95.453 91.69 107.309 M 193.789 122.079 C 207.329 129.259 222.057 128.025 232.972 118.796 C 243.618 109.794 247.788 95.303 243.513 82.169 C 238.872 67.914 225.34 58.19 210.567 58.496 C 195.675 58.803 182.243 69.018 178.239 83.079 C 174.015 97.913 179.753 112.743 193.789 122.079 M 80.8 195.651 C 58.275 192.522 39.117 209.12 40.406 230.647 C 41.475 248.49 55.548 262.649 72.77 263.206 C 90.846 263.791 105.959 251.381 108.185 234.125 C 110.553 215.77 99.628 200.041 80.8 195.651 M 341.328 195.644 C 340.845 195.771 340.365 195.909 339.879 196.024 C 324.429 199.689 313.741 212.931 313.452 228.771 C 313.172 244.058 323.877 258.268 338.57 262.114 C 354.094 266.178 370.322 259.371 377.613 245.303 C 383.67 233.617 383.374 221.795 376.138 210.715 C 368.181 198.532 356.515 193.84 341.328 195.644 Z" />
+                </svg>
+            </div>
+            <div className="drawingToolBox">
+                <svg onClick={() => { (containerSelector === "width") ? setContainerSelector("") : setContainerSelector("width") }} className="drawingToolIcon" version="1.1" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                    <path opacity="1.000000" stroke="none" d="M 79.929 336.951 C 192.201 336.952 303.974 336.952 416.195 336.952 C 416.325 339.063 416.528 340.844 416.531 342.625 C 416.555 359.453 416.384 376.283 416.654 393.106 C 416.725 397.542 415.511 398.649 411.096 398.644 C 295.803 398.518 180.509 398.544 65.216 398.545 C 52.75 398.545 40.284 398.545 27.561 398.545 C 27.561 377.999 27.561 357.761 27.561 336.95 C 44.907 336.95 62.168 336.95 79.929 336.951 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 414.933 285.689 C 375.478 285.741 336.023 285.83 296.568 285.839 C 207.66 285.859 118.752 285.839 29.302 285.616 C 28.457 285.151 28.188 285.192 27.953 285.52 C 27.738 279.61 27.42 273.701 27.335 267.789 C 27.227 260.328 27.309 252.864 27.309 245.131 C 157.126 245.131 286.575 245.131 416.475 245.131 C 416.475 258.45 416.475 271.724 416.079 285.137 C 415.325 285.181 415.075 285.319 414.933 285.689 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 415.913 163.238 C 415.913 173.269 415.913 183.3 415.913 193.54 C 286.504 193.54 157.235 193.54 27.634 193.54 C 27.634 183.515 27.634 173.456 27.634 162.912 C 156.5 162.912 285.252 162.912 414.548 163.132 C 415.365 163.314 415.639 163.276 415.913 163.238 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 414.915 111.658 C 371.801 111.705 328.686 111.784 285.572 111.793 C 200.003 111.812 114.434 111.793 28.311 111.544 C 27.576 111.088 27.354 110.939 27.091 110.852 C 27.091 104.534 27.091 98.215 27.091 91.537 C 156.56 91.537 286.003 91.537 415.916 91.537 C 415.916 97.706 415.916 103.819 415.658 110.482 C 415.16 111.179 414.998 111.388 414.915 111.658 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 27.045 111.127 C 27.354 110.939 27.576 111.088 27.847 111.478 C 27.624 111.573 27.312 111.488 27.045 111.127 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 415.185 111.727 C 414.998 111.388 415.16 111.179 415.582 110.944 C 415.661 111.17 415.558 111.484 415.185 111.727 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 415.69 163.074 C 415.639 163.276 415.365 163.314 415.012 163.203 C 415.111 163.006 415.289 162.958 415.69 163.074 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 28.175 285.67 C 28.188 285.192 28.457 285.151 28.838 285.542 C 28.743 285.731 28.57 285.776 28.175 285.67 Z" />
+                    <path opacity="1.000000" stroke="none" d="M 415.192 285.757 C 415.075 285.319 415.325 285.181 415.789 285.4 C 415.748 285.625 415.6 285.725 415.192 285.757 Z" />
+                </svg>
+            </div>
         </div>
     )
-}
+}   

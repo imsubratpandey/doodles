@@ -17,6 +17,13 @@ code {
     monospace;
 }
 
+.preventSelect {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+
 ::-webkit-scrollbar {
   height: 0px;
   width: 0px;

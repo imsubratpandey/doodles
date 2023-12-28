@@ -24,16 +24,29 @@ export default function Playground() {
     const [playgroundMessages, setPlaygroundMessages] = useState<{ from: string, message: string }[]>([]);
     const [selectedTool, setSelectedTool] = useState<string>("freehand");
     const [drawingCanvasBoxDimension, setDrawingCanvasBoxDimension] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+    const [lineWidth, setLineWidth] = useState<number>(5);
+    const [lineColor, setLineColor] = useState<string>("#455d7a");
+    const [lineOpacity, setLineOpacity] = useState<number>(1);
     const [inGame, setInGame] = useState<boolean>(false);
-    const [displayMessage, setDisplayMessage] = useState<string>("Loading");
+    const [displayMessage, setDisplayMessage] = useState<string>("");
     const [drawerWords, setDrawerWords] = useState<string[]>([]);
     const [drawerWord, setDrawerWord] = useState<string>("");
     const [drawer, setDrawer] = useState<any>();
     const [canDraw, setCanDraw] = useState<boolean>(false);
     const [showCanvas, setShowCanvas] = useState<boolean>(false);
+    const [countdown, setCountdown] = useState<number>(0);
     useEffect(() => {
         setDrawingCanvasBoxDimension({ width: drawingCanvasBoxRef.current?.offsetWidth, height: drawingCanvasBoxRef.current?.offsetHeight });
     }, [showPlaygroundLoadingWindow, drawingCanvasBoxRef]);
+    useEffect(() => {
+        async function fetchData() {
+            if (countdown) {
+                await new Promise(res => setTimeout(res, 1000));
+                setCountdown(countdown - 1);
+            }
+        }
+        fetchData();
+    }, [countdown, setCountdown]);
     useEffect(() => {
         async function fetchData() {
             if (accessToPlayground) {
@@ -70,6 +83,7 @@ export default function Playground() {
                         setShowCanvas(true);
                         setDrawerWords([]);
                         setDisplayMessage("");
+                        setCountdown(120);
                         if (payload.drawer.doodleId === user.doodleId) {
                             setDrawerWord(payload.drawerWord);
                             setCanDraw(true);
@@ -173,17 +187,30 @@ export default function Playground() {
                                 {
                                     (canDraw === true) ?
                                         <>
-                                            <DrawingTools selectedTool={selectedTool} setSelectedTool={setSelectedTool} />
+                                            <div id="drawerTitleMessageContainer" className="preventSelect">
+                                                Draw {drawerWord} !!!
+                                            </div>
+                                            <DrawingTools lineWidth={lineWidth} setLineWidth={setLineWidth} lineColor={lineColor} setLineColor={setLineColor} lineOpacity={lineOpacity} setLineOpacity={setLineOpacity} selectedTool={selectedTool} setSelectedTool={setSelectedTool} socketConnection={socket.current} playgroundDetails={playgroundDetails} />
                                         </>
                                         :
-                                        <></>
+                                        <>
+                                            <div id="drawerWordContainer" className="preventSelect">
+                                                GUESS THIS
+                                            </div>
+                                            <div id="membersTitleMessageContainer" className="preventSelect">
+                                                {drawer.username} is drawing
+                                            </div>
+                                        </>
                                 }
-                                <Canvas dimension={{ width: drawingCanvasBoxDimension.width, height: drawingCanvasBoxDimension.height }} canDraw={canDraw} selectedTool={selectedTool} socketConnection={socket.current} playgroundDetails={playgroundDetails} />
+                                <div id="timerContainer" className="preventSelect">
+                                    {countdown}
+                                </div>
+                                <Canvas dimension={{ width: drawingCanvasBoxDimension.width, height: drawingCanvasBoxDimension.height }} lineWidth={lineWidth} setLineWidth={setLineWidth} lineColor={lineColor} setLineColor={setLineColor} lineOpacity={lineOpacity} setLineOpacity={setLineOpacity} canDraw={canDraw} selectedTool={selectedTool} socketConnection={socket.current} playgroundDetails={playgroundDetails} />
 
                             </>
                             :
                             <>
-                                <Manager toast={toast} inGame={inGame} setInGame={setInGame} setShowCanvas={setShowCanvas} displayMessage={displayMessage} setDisplayMessage={setDisplayMessage} setDrawer={setDrawer} drawerWords={drawerWords} setDrawerWords={setDrawerWords} playgroundDetails={playgroundDetails} socketConnection={socket.current} />
+                                <Manager toast={toast} countdown={countdown} setCountdown={setCountdown} inGame={inGame} setInGame={setInGame} setShowCanvas={setShowCanvas} displayMessage={displayMessage} setDisplayMessage={setDisplayMessage} setDrawer={setDrawer} drawerWords={drawerWords} setDrawerWords={setDrawerWords} playgroundDetails={playgroundDetails} socketConnection={socket.current} />
                             </>
                     }
                 </div>

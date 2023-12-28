@@ -50,7 +50,7 @@ io.on("connection", (socket) => {
         onlineId.set(socket.id, `${payload.doodleId}+${payload.playgroundId}`);
         socketIdToPlayground.set(socket.id, `${payload.owner}+${payload.playgroundId}`);
         await socket.join(`${payload.owner}+${payload.playgroundId}`);
-        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+        socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
             "playground-update");
     });
 
@@ -97,7 +97,7 @@ io.on("connection", (socket) => {
         await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { gameInProgress: true } });
         await socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
             "recieve-game-started");
-        await new Promise(res => setTimeout(res, 5000));
+        await new Promise(res => setTimeout(res, 2000));
         for (i = 0; i < payload.members.length; i++) {
             const playground = await Playgrounds.findOne({ playgroundId: payload.playgroundId });
             if (playground.members[i].active === false) {
@@ -112,7 +112,7 @@ io.on("connection", (socket) => {
             await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { drawerWord: playgroundWords.get(payload.playgroundId), canvasEnableTime: [date.getHours(), date.getMinutes(), date.getSeconds()] } });
             await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
                 "recieve-canvas-enable", { drawer: playground.members[i], drawerWord: playgroundWords.get(payload.playgroundId) });
-            await new Promise(res => setTimeout(res, 30000));
+            await new Promise(res => setTimeout(res, 120000));
         }
         await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { "members.$[].score": 0 } });
         await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
@@ -142,6 +142,21 @@ io.on("connection", (socket) => {
     socket.on("send-flood-fill", async (payload) => {
         socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
             "recieve-flood-fill", payload);
+    });
+
+    socket.on("send-width-setting", async (payload) => {
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-width-setting", payload);
+    });
+
+    socket.on("send-opacity-setting", async (payload) => {
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-opacity-setting", payload);
+    });
+
+    socket.on("send-color-setting", async (payload) => {
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-color-setting", payload);
     });
 
     socket.on("send-message", async (payload) => {

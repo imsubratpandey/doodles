@@ -7,21 +7,23 @@ interface Props {
     height: number
   },
   canDraw: boolean,
+  lineWidth: number,
+  setLineWidth: any,
+  lineColor: string,
+  setLineColor: any,
+  lineOpacity: number,
+  setLineOpacity: any,
   selectedTool: string,
   socketConnection: any,
   playgroundDetails: any
 }
 
-export default function Canvas({ dimension, canDraw, selectedTool, socketConnection, playgroundDetails }: Props) {
+export default function Canvas({ dimension, canDraw, lineWidth, setLineWidth, lineColor, setLineColor, lineOpacity, setLineOpacity, selectedTool, socketConnection, playgroundDetails }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const [user, setUser] = useState<any>();
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   const [coordinate, setCoordinate] = useState<number[]>([0, 0]);
-  const [lineWidth] = useState<number>(5);
-  const [lineColor] = useState<string>("black");
-  const [lineOpacity] = useState<number>(1);
-  const [fillColor] = useState<number>(0xFF0000FF);
   const [snapshot, setSnapshot] = useState<ImageData>();
 
   useEffect(() => {
@@ -44,10 +46,18 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
     async function fetchData() {
       if (socketConnection) {
         let snap: any, coordinate: number[];
+        socketConnection.on("recieve-width-setting", async (payload: any) => {
+          setLineWidth(payload.lineWidth);
+        });
+        socketConnection.on("recieve-opacity-setting", async (payload: any) => {
+          setLineOpacity(payload.lineOpacity);
+        });
+        socketConnection.on("recieve-color-setting", async (payload: any) => {
+          setLineColor(payload.lineColor);
+        });
         socketConnection.on("recieve-start-drawing", async (payload: any) => {
           if (canvasRef.current && ctxRef.current) {
             coordinate = [(payload.xPercentage * dimension.width / 100), (payload.yPercentage * dimension.height / 100)];
-            console.log(coordinate);
             ctxRef.current.beginPath();
             ctxRef.current.moveTo(
               (payload.xPercentage * dimension.width / 100),
@@ -158,9 +168,48 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
             }
           }
         });
+        const spansToCheck: { left: number, right: number, y: number, direction: number }[] = [];
+        const addSpan = (left: number, right: number, y: number, direction: number) => {
+          spansToCheck.push({ left, right, y, direction });
+        }
+        const checkSpan = (left: number, right: number, y: number, direction: number, pixelData: { width: number, height: number, data: Uint32Array }, targetColor: number) => {
+          let inSpan: boolean = false;
+          let start = 0;
+          let x: number;
+          for (x = left; x < right; ++x) {
+            const color: number = getPixel(pixelData, x, y);
+            if (color === targetColor) {
+              if (!inSpan) {
+                inSpan = true;
+                start = x;
+              }
+            } else {
+              if (inSpan) {
+                inSpan = false;
+                addSpan(start, x - 1, y, direction);
+              }
+            }
+          }
+          if (inSpan) {
+            inSpan = false;
+            addSpan(start, x - 1, y, direction);
+          }
+        }
+        const getPixel = (pixelData: { width: number, height: number, data: Uint32Array }, x: number, y: number) => {
+          if (x < 0 || y < 0 || x >= pixelData.width || y >= pixelData.height) {
+            return -1;
+          } else {
+            return pixelData.data[y * pixelData.width + x];
+          }
+        }
+        const getOxCode = (lineColor: string) => {
+          const OxCode = "0xFF".concat(lineColor.slice(5, 7), lineColor.slice(3, 5), lineColor.slice(1, 3));
+          return Number(OxCode);
+        };
         socketConnection.on("recieve-flood-fill", async (payload: any) => {
           if (ctxRef.current) {
-            const x = (payload.xPercentage * dimension.width / 100), y = (payload.yPercentage * dimension.height / 100);
+            const x = Math.round(payload.xPercentage * dimension.width / 100), y = Math.round(payload.yPercentage * dimension.height / 100);
+            const fillColor = getOxCode(lineColor);
             const imageData: ImageData = ctxRef.current.getImageData(0, 0, ctxRef.current.canvas.width, ctxRef.current.canvas.height);
             const pixelData: { width: number, height: number, data: Uint32Array } = {
               width: imageData.width,
@@ -211,7 +260,7 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
       }
     }
     fetchData();
-  }, [socketConnection]);
+  }, [socketConnection, lineColor]);
 
 
   const getDimensionPercentage = (x: number, y: number) => {
@@ -429,12 +478,17 @@ export default function Canvas({ dimension, canDraw, selectedTool, socketConnect
       return pixelData.data[y * pixelData.width + x];
     }
   }
+  const getOxCode = (lineColor: string) => {
+    const OxCode = "0xFF".concat(lineColor.slice(5, 7), lineColor.slice(3, 5), lineColor.slice(1, 3));
+    return Number(OxCode);
+  };
   const floodFill = (e: any) => {
     if (ctxRef.current && selectedTool === "floodfill" && canDraw === true) {
       const { xPercentage, yPercentage } = getDimensionPercentage(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
       const payload = { xPercentage: xPercentage, yPercentage: yPercentage, owner: playgroundDetails.owner, doodleId: user.doodleId, playgroundId: playgroundDetails.playgroundId };
       socketConnection.emit("send-flood-fill", payload);
       const x = e.nativeEvent.offsetX, y = e.nativeEvent.offsetY;
+      const fillColor = getOxCode(lineColor);
       const imageData: ImageData = ctxRef.current.getImageData(0, 0, ctxRef.current.canvas.width, ctxRef.current.canvas.height);
       const pixelData: { width: number, height: number, data: Uint32Array } = {
         width: imageData.width,
