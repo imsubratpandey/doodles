@@ -34,6 +34,7 @@
 }
 
 #playgroundContainerFlex {
+    position: relative;
     width: 100vw;
     height: 100vh;
     background-color: #DEE4E7;
@@ -67,18 +68,27 @@
     flex-direction: column;
 }
 
+.acceptRejectOptionsTitle {
+    font-family: theUnseen;
+}
+
 .accept {
     font-size: 16px;
-    background-color: rgb(66, 133, 244);
-    color: white;
+    font-family: theUnseen;
+    color: #41403e;
     text-align: center;
     margin: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
     padding-left: 10px;
     padding-right: 10px;
-    border: none;
-    border-radius: 4px;
+    border-radius: 15px 225px 255px 15px 15px 255px 225px 15px;
+    border-style: solid;
+    border-width: 2px;
+    border-bottom-left-radius: 15px 255px;
+    border-bottom-right-radius: 225px 15px;
+    border-top-left-radius: 255px 15px;
+    border-top-right-radius: 15px 225px;
     width: fit-content;
     text-decoration: none;
     display: inline-block;
@@ -86,22 +96,28 @@
 }
 
 .accept:hover {
-    background-color: rgb(37, 111, 249);
+    color: #ffaa00;
     cursor: pointer;
+    transform: translate3d(0, 2px, 0);
 }
 
 .reject {
     font-size: 16px;
-    background-color: rgb(244, 66, 66);
-    color: white;
+    font-family: theUnseen;
+    color: #41403e;
     text-align: center;
-    margin: 5px;
+    margin: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
     padding-left: 10px;
     padding-right: 10px;
-    border: none;
-    border-radius: 4px;
+    border-radius: 15px 225px 255px 15px 15px 255px 225px 15px;
+    border-style: solid;
+    border-width: 2px;
+    border-bottom-left-radius: 15px 255px;
+    border-bottom-right-radius: 225px 15px;
+    border-top-left-radius: 255px 15px;
+    border-top-right-radius: 15px 225px;
     width: fit-content;
     text-decoration: none;
     display: inline-block;
@@ -109,8 +125,9 @@
 }
 
 .reject:hover {
-    background-color: rgb(213, 0, 0);
+    color: #ffaa00;
     cursor: pointer;
+    transform: translate3d(0, 2px, 0);
 }
 
 #drawingBox {
@@ -223,6 +240,7 @@
 #membersTitleBox {
     width: 90%;
     height: 10%;
+    padding: 1px;
     font-size: x-large;
     color: #455d7a;
     border-style: none none solid none;
@@ -240,7 +258,7 @@
 
 #membersSettingIcon {
     width: auto;
-    height: 80%;
+    height: 60%;
     fill: #455d7a;
     cursor: pointer;
 }
@@ -248,6 +266,7 @@
 #chatContainer {
     width: 100%;
     height: 50%;
+    min-height: 50%;
     background-color: #F2F2F2;
     transition: 0.2s ease-in-out;
     scale: 90%;
@@ -259,15 +278,25 @@
     box-sizing: border-box;
     padding-top: 4%;
     padding-bottom: 4%;
+    overflow: hidden;
 
     @media only screen and (max-width: 850px) {
         height: 100%;
     }
 }
 
+#chatLoader {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 #chatTitleBox {
     width: 90%;
     height: 10%;
+    padding: 1px;
     font-size: x-large;
     font-family: theUnseen;
     color: #455d7a;
@@ -285,7 +314,7 @@
 
 #chatSettingIcon {
     width: auto;
-    height: 80%;
+    height: 60%;
     fill: #455d7a;
     cursor: pointer;
 }

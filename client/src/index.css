@@ -12,6 +12,36 @@ body {
   src: local('theUnseen'), url(./assets/fonts/theUnseen.ttf) format('truetype');
 }
 
+@font-face {
+  font-family: 'prospec';
+  src: local('prospec'), url(./assets/fonts/prospec.otf) format('opentype');
+}
+
+@font-face {
+  font-family: 'candyCane';
+  src: local('candyCane'), url(./assets/fonts/candyCane.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'cartoonMadness';
+  src: local('cartoonMadness'), url(./assets/fonts/cartoonMadness.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'classroom';
+  src: local('classroom'), url(./assets/fonts/classroom.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'rockShow';
+  src: local('rockShow'), url(./assets/fonts/rockShow.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'sketchBook';
+  src: local('sketchBook'), url(./assets/fonts/sketchBook.ttf) format('truetype');
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
@@ -23,6 +53,10 @@ code {
   user-select: none;
 }
 
+.toastBody {
+  font-family: theUnseen;
+}
+
 
 ::-webkit-scrollbar {
   height: 0px;
@@ -31,6 +65,6 @@ code {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0);
+  background: #455d7a;
   border-radius: 0px;
 }

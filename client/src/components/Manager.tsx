@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { gameManagerRoute } from "../utils/APIRoutes";
+import Rankings from './Rankings';
 import axios from "axios";
 import "../css/Manager.css";
 
 interface Props {
     toast: any,
+    toastOptions: any,
     countdown: number,
+    roundPlayed: number,
+    rankingsData: any,
+    setRankingsData: any,
+    setRoundPlayed: any,
     setCountdown: any,
     inGame: boolean,
     setInGame: any,
@@ -19,9 +25,10 @@ interface Props {
     socketConnection: any
 }
 
-export default function Manager({ toast, countdown, setCountdown, inGame, setInGame, setShowCanvas, displayMessage, setDisplayMessage, setDrawer, drawerWords, setDrawerWords, playgroundDetails, socketConnection }: Props) {
+export default function Manager({ toast, toastOptions, rankingsData, setRankingsData, roundPlayed, setRoundPlayed, countdown, setCountdown, inGame, setInGame, setShowCanvas, displayMessage, setDisplayMessage, setDrawer, drawerWords, setDrawerWords, playgroundDetails, socketConnection }: Props) {
     const [user, setUser] = useState<any>();
     const [drawerWordIndex, setdrawerWordIndex] = useState<number>();
+    const [isRankingVisible, setIsRankingVisible] = useState<boolean>(false);
 
     useEffect(() => {
         async function fetchData() {
@@ -41,6 +48,7 @@ export default function Manager({ toast, countdown, setCountdown, inGame, setInG
                     setDisplayMessage(`${payload.drawer.username} is choosing a word`);
                 });
                 socketConnection.on("recieve-game-ended", async (payload: any) => {
+                    setRankingsData(payload.rankingsData);
                     setDisplayMessage("");
                     setInGame(false);
                     setShowCanvas(false);
@@ -48,17 +56,18 @@ export default function Manager({ toast, countdown, setCountdown, inGame, setInG
             }
         }
         fetchData();
-    }, [socketConnection, setInGame, setDisplayMessage, setDrawer, setCountdown, setDrawerWords, setShowCanvas]);
+    }, [socketConnection, setInGame, setDisplayMessage, setRankingsData, setDrawer, setCountdown, setDrawerWords, setShowCanvas]);
     const startGame = async () => {
         if (user) {
             const { data } = await axios.post(gameManagerRoute, { playgroundId: playgroundDetails.playgroundId, doodleId: user.doodleId }, { withCredentials: true });
             if (data.status === true) {
                 const payload = { owner: playgroundDetails.owner, playgroundId: playgroundDetails.playgroundId, members: playgroundDetails.members };
                 socketConnection.emit("send-game-started", payload);
+                setRoundPlayed(roundPlayed + 1);
                 setInGame(true);
             }
             else {
-                toast.error(data.msg);
+                toast.error(data.msg, toastOptions);
             }
         }
     };
@@ -70,6 +79,18 @@ export default function Manager({ toast, countdown, setCountdown, inGame, setInG
     return (
         <>
             <div id="managerContainer">
+                <div id="openRankingsBox" className="preventSelect" onClick={() => { setIsRankingVisible(!isRankingVisible); }}>
+                    Rankings
+                </div>
+                {
+                    (isRankingVisible === true) ?
+                        <>
+                            <Rankings rankingsData={rankingsData} setIsRankingVisible={setIsRankingVisible} />
+                        </>
+                        :
+                        <>
+                        </>
+                }
                 {
                     (inGame === true) ?
                         <>
@@ -117,7 +138,25 @@ export default function Manager({ toast, countdown, setCountdown, inGame, setInG
                         :
                         <>
                             <div id="welcomeMessageContainer" className="preventSelect">
-                                Welcome to playground
+                                {
+                                    (rankingsData.length === 0) ?
+                                        <>
+                                            Welocme to playground
+                                        </>
+                                        :
+                                        <>
+                                            {
+                                                (rankingsData[0].totalScore !== rankingsData[1].totalScore) ?
+                                                    <>
+                                                        {rankingsData[0].username} is winner
+                                                    </>
+                                                    :
+                                                    <>
+                                                        It's a tie
+                                                    </>
+                                            }
+                                        </>
+                                }
                             </div>
                             {
                                 (user?.doodleId === playgroundDetails?.owner) ?
@@ -125,14 +164,13 @@ export default function Manager({ toast, countdown, setCountdown, inGame, setInG
                                         <div className="managerButtons">
                                             <button className="inviteButton">Copy Invite Link</button>
                                             <button className="inviteButton">Copy Ground Id</button>
-                                            <button className="startButton" onClick={startGame}>Start Game</button>
+                                            <button className="startButton" onClick={startGame}>{(roundPlayed === 0) ? "Start Game" : "Play Next Round"}</button>
                                         </div>
-
                                     </>
                                     :
                                     <>
                                         <div id="membersMessageContainer" className="preventSelect">
-                                            Waiting for the admin to start the game !!!
+                                            {(roundPlayed === 0) ? "Waiting for the admin to start the game !!!" : "Waiting for the admin to start next round"}
                                         </div>
                                     </>
                             }

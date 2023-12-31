@@ -1,0 +1,63 @@
+#rankingsContainer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #F2F2F2;
+    z-index: 3;
+}
+
+#rankingsTitle {
+    font-family: theUnseen;
+    font-size: xx-large;
+    color: #455d7a;
+    height: 10%;
+    padding-left: 2%;
+    padding-right: 2%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-transform: uppercase;
+}
+
+#rankingCloseIcon {
+    width: 20px;
+    height: 20px;
+    fill: #455d7a;
+    cursor: pointer;
+}
+
+#rankingsContent {
+    height: 90%;
+    overflow: scroll;
+}
+
+#noRankingsTitle {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: theUnseen;
+    font-size: xx-large;
+}
+
+.rankingBox {
+    background-color: #FFFF;
+    border-radius: 8px;
+    height: 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2%;
+    margin: 1%;
+    font-family: theUnseen;
+}
+
+.rankingBoxInfo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.rankingBoxName {
+    margin-left: 10px;
+}

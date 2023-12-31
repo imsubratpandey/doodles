@@ -9,3 +9,4 @@ export const playgroundDetailsRoute = `${host}/playground/details`;
 export const playgroundValidationRoute = `${host}/playground/validate`;
 export const addMessageRoute = `${host}/playground/message`;
 export const gameManagerRoute = `${host}/playground/manager`;
+export const clearChatRoute = `${host}/playground/clear`;

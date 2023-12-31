@@ -1,3 +1,98 @@
+#homeContainer {
+    width: 100vw;
+    height: 100vh;
+}
+
+#homeLoadingWindowFlex {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FFFF;
+    z-index: 2;
+}
+
+#homeLoadingWindowNone {
+    display: none;
+}
+
+#homeHeader {
+    width: 100%;
+    height: 10%;
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    z-index: 1;
+}
+
+#homeContent {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#homeDecorationBox {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    z-index: -1;
+}
+
+.homeDecoration {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+#homeTitle {
+    text-transform: uppercase;
+    font-family: prospec;
+    -webkit-text-stroke: 1px rgb(0, 0, 0);
+    animation-name: fontChange;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    font-size: 200px;
+
+    @media only screen and (min-width: 401px) and (max-width: 850px) {
+        font-size: 100px;
+    }
+
+    @media only screen and (max-width: 400px) {
+        font-size: 50px;
+    }
+}
+
+@keyframes fontChange {
+    0% {
+        font-family: candyCane;
+    }
+
+    20% {
+        font-family: theUnseen;
+    }
+
+    40% {
+        font-family: sketchBook;
+    }
+
+    60% {
+        font-family: classroom;
+    }
+
+    80% {
+        font-family: rockShow;
+    }
+
+    100% {
+        font-family: candyCane;
+    }
+}
+
 #playgroundButtons {
     width: 100vw;
     height: 100vh;
@@ -25,4 +120,47 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
+}
+
+#idInput {
+    outline: none;
+    border: none;
+    background-color: rgba(0, 0, 0, 0);
+    height: 50%;
+    padding: 0px;
+    margin: 0px;
+    transition: 0.2s;
+    font-family: theUnseen;
+}
+
+#idInput:focus {
+    outline: none;
+    border: none;
+    border-bottom: 2px solid rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0);
+    height: 50%;
+}
+
+#idInput:hover {
+    border-bottom: 2px solid rgb(0, 0, 0);
+}
+
+#inputForm {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.homeButton {
+    font-family: theUnseen;
+    border: none;
+    background-color: rgba(0, 0, 0, 0);
+    height: 50%;
+    margin-right: 10px;
+    transition: 0.2s ease-in;
+    cursor: pointer;
+}
+
+.homeButton:hover {
+    border-bottom: 2px solid rgb(0, 0, 0);
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { Flip, ToastContainer, toast } from "react-toastify";
 import { registerRoute, userValidationRoute } from "../utils/APIRoutes";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -7,6 +7,17 @@ import "../css/Register.css";
 
 export default function Register() {
     const navigate = useNavigate();
+    const toastOptions: any = {
+        position: "bottom-left",
+        autoClose: 5000,
+        transition: Flip,
+        hideProgressBar: true,
+        pauseOnHover: false,
+        pauseOnFocusLoss: false,
+        draggable: false,
+        closeButton: false,
+        closeOnClick: false
+    };
     useEffect(() => {
         async function fetchData() {
             if (localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY as string)) {
@@ -37,7 +48,7 @@ export default function Register() {
                     navigate("/");
                 }
                 else {
-                    toast.error(data.msg);
+                    toast.error(data.msg, toastOptions);
                 }
             } catch (err) {
                 console.log(err);
@@ -47,15 +58,15 @@ export default function Register() {
     const handleValidation = () => {
         const { password, confirmPassword, username, email } = values;
         if (username === "") {
-            toast.error("Name is required");
+            toast.error("Name is required", toastOptions);
             return false;
         }
         else if (/(?=.*\d)/.test(username)) {
-            toast.error("Name should not contain numbers");
+            toast.error("Name should not contain numbers", toastOptions);
             return false;
         }
         else if (/^(?=.*[-+_!@#$%^&*.,?])/.test(username)) {
-            toast.error("Name should not contain special characters");
+            toast.error("Name should not contain special characters", toastOptions);
             return false;
         }
         else if (email === "") {
@@ -63,19 +74,19 @@ export default function Register() {
             return false;
         }
         else if (!(/^\w+([-]?\w+)*@\w+([-]?\w+)*(\.\w{2,3})+$/.test(email))) {
-            toast.error("Invalid Email");
+            toast.error("Invalid Email", toastOptions);
             return false;
         }
         else if (username.length < 3) {
-            toast.error("Name should be greater than or equal to 3 characters");
+            toast.error("Name should be greater than or equal to 3 characters", toastOptions);
             return false;
         }
         else if (password.length < 8) {
-            toast.error("Password should be greater than or equal to 8 characters");
+            toast.error("Password should be greater than or equal to 8 characters", toastOptions);
             return false;
         }
         else if (password !== confirmPassword) {
-            toast.error("Password and confirm password should same");
+            toast.error("Password and confirm password should same", toastOptions);
             return false;
         }
         return true;
@@ -84,6 +95,37 @@ export default function Register() {
     return (
         <>
             <div className="registerContainer">
+                <div className="register-box">
+                    <h2>Register</h2>
+                    <form onSubmit={(event) => handleSubmit(event)}>
+                        <div className="user-box">
+                            <input type="text" name="username" onChange={(e) => handleChange(e)} autoComplete="off" />
+                            <label>Name</label>
+                        </div>
+                        <div className="user-box">
+                            <input type="email" name="email" onChange={(e) => handleChange(e)} min="3" autoComplete="off" />
+                            <label>Email</label>
+                        </div>
+                        <div className="user-box">
+                            <input type="password" name="password" onChange={(e) => handleChange(e)} autoComplete="off" />
+                            <label>Password</label>
+                        </div>
+                        <div className="user-box">
+                            <input type="password" name="confirmPassword" onChange={(e) => handleChange(e)} autoComplete="off" />
+                            <label>Confirm Password</label>
+                        </div>
+                        <button type="submit">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            Create User
+                        </button>
+                    </form>
+                </div>
+                <span id="loginSpan">Already have an account? <Link to="/login">Login</Link></span>
+            </div>
+            {/* <div className="registerContainer">
                 <form className="registerForm" onSubmit={(event) => handleSubmit(event)}>
                     <input type="text" placeholder="Name" name="username" onChange={(e) => handleChange(e)} autoComplete="off" />
                     <input type="email" placeholder="Email" name="email" onChange={(e) => handleChange(e)} autoComplete="off" />
@@ -92,8 +134,8 @@ export default function Register() {
                     <button type="submit">Create User</button>
                     <span>Already have an account? <Link to="/login">Login</Link></span>
                 </form>
-            </div>
-            <ToastContainer style={{ backgroundColor: "rgba(0, 0, 0, 0)", overflow: "hidden" }} toastStyle={{ backgroundColor: "#1b1b1b" }} newestOnTop />
+            </div> */}
+            <ToastContainer bodyClassName="toastBody" style={{ backgroundColor: "rgba(0, 0, 0, 0)", overflow: "hidden" }} toastStyle={{ backgroundColor: "#FFFF" }} newestOnTop />
         </>
     )
 }

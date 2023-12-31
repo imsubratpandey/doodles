@@ -19,6 +19,7 @@ interface Props {
 export default function ChatBox({ drawerDoodleId, members, playgroundMessages, setPlaygroundMessages, playgroundDetails, setPlaygroundDetails, socketConnection }: Props) {
     const messageRef = useRef<HTMLInputElement>(null);
     const [user, setUser] = useState<any>();
+    const scrollRef = useRef<any>();
     const [values, setValues] = useState({ message: "" });
 
     useEffect(() => {
@@ -40,13 +41,15 @@ export default function ChatBox({ drawerDoodleId, members, playgroundMessages, s
         }
         fetchData();
     }, [members, socketConnection, playgroundMessages, setPlaygroundMessages]);
+    useEffect(() => {
+        scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [playgroundMessages]);
     const handleSubmit = async (event: any) => {
         event.preventDefault();
         if (handleValidation() && messageRef.current) {
             try {
                 const { data } = await axios.post(addMessageRoute, { playgroundId: playgroundDetails.playgroundId, doodleId: user.doodleId, drawerId: drawerDoodleId, username: user.username, message: values.message }, { withCredentials: true });
                 if (data.status === true && data.guessed === true) {
-                    console.log(data);
                     setPlaygroundMessages([...playgroundMessages, { from: user.username, message: `${user.username} guessed the word` }]);
                     members.forEach((member: { doodleId: "string", username: string, score: number, totalScore: number }) => {
                         if (member.doodleId === user.doodleId) {
@@ -83,8 +86,8 @@ export default function ChatBox({ drawerDoodleId, members, playgroundMessages, s
             <div id="messagesContainer">
                 {playgroundMessages.map((message: { from: string, message: string }, i: number) => {
                     return (
-                        <div className="messageBox" key={i}>
-                            <div className="messageSenderName">
+                        <div ref={scrollRef} className="messageBox" key={i}>
+                            <div className="messageSenderName preventSelect">
                                 {message.from}
                             </div>
                             <div className="messageContent">

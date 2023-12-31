@@ -35,7 +35,7 @@ const getScore = (prevTime) => {
     if (timeDifference < 0)
         return 100;
     else
-        return Math.round((1 - timeDifference / 30) * 100);
+        return Math.round((1 - timeDifference / 120) * 100);
 };
 
 //playground create request handler
@@ -50,7 +50,7 @@ module.exports.createPlayground = async (req, res, next) => {
         if (await isValidRequest(doodleId, token) === false)
             return res.status(200).json({ status: false, msg: "Request not processed" });
         const user = await Users.findOne({ doodleId: doodleId });
-        await Playgrounds.insertOne({ createdAt: new Date(), owner: doodleId, playgroundId: playgroundId, gameInProgress: false, members: [{ doodleId: doodleId, username: user.username, active: false, score: 0, totalScore: 0 }], banMembers: [], messages: [], drawerWord: "" });
+        await Playgrounds.insertOne({ createdAt: new Date(), owner: doodleId, playgroundId: playgroundId, gameInProgress: false, roundPlayed: 0, members: [{ doodleId: doodleId, username: user.username, active: false, score: 0, totalScore: 0 }], banMembers: [], messages: [], rankingsData: [], drawerWord: "" });
         return res.status(200).json({ status: true, playgroundId: playgroundId, msg: "Playground created" });
     }
     catch (ex) {
@@ -156,6 +156,27 @@ module.exports.addMessage = async (req, res, next) => {
     }
 };
 
+//clear message request handler
+module.exports.clearMessage = async (req, res, next) => {
+    try {
+        const { playgroundId, doodleId } = req.body;
+        const token = req.cookies.token;
+        const playground = await Playgrounds.findOne({ playgroundId: playgroundId });
+        if (!playground)
+            return res.status(200).json({ status: false, msg: "Playground does not exist" });
+        if (await isValidRequest(doodleId, token) === false)
+            return res.status(200).json({ status: false, msg: "Request not processed" });
+        if (doodleId !== playground.owner) {
+            return res.status(200).json({ status: false, msg: "You are not admin" });
+        }
+        await Playgrounds.updateOne({ playgroundId: playgroundId }, { $set: { messages: [] } });
+        return res.status(200).json({ status: true, msg: "Chat cleared" });
+    }
+    catch (ex) {
+        next(ex);
+    }
+};
+
 // game manager request handler
 module.exports.gameManager = async (req, res, next) => {
     try {
@@ -170,7 +191,7 @@ module.exports.gameManager = async (req, res, next) => {
             return res.status(200).json({ status: false, msg: "Add atleast one more member to start the game" });
         if (playground.owner !== doodleId || playground.members.filter(element => element.doodleId === doodleId)[0].active === false)
             return res.status(200).json({ status: false, msg: "Check your network connection" });
-        await Playgrounds.updateOne({ playgroundId: playgroundId }, { $set: { gameInProgress: true } });
+        await Playgrounds.updateOne({ playgroundId: playgroundId }, { $set: { gameInProgress: true }, $inc: { roundPlayed: 1 } });
         return res.status(200).json({ status: true, msg: "Game started" });
     }
     catch (ex) {

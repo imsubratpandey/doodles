@@ -1,4 +1,5 @@
 #membersBoxContainer {
+    position: relative;
     width: 90%;
     height: 90%;
     overflow: scroll;

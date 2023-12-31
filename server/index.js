@@ -5,6 +5,7 @@ const userRoutes = require("./routes/userRoutes");
 const playgroundRoutes = require("./routes/playgroundRoutes");
 const { Playgrounds } = require("./collections/mongoCollections");
 const cookieParser = require("cookie-parser");
+var randomWords = require('better-random-words');
 require("dotenv").config();
 
 app.use(express.json());
@@ -45,7 +46,7 @@ io.on("connection", (socket) => {
         const playground = await Playgrounds.findOne({ playgroundId: payload.playgroundId });
         if (!playground)
             return;
-        await Playgrounds.updateOne({ playgroundId: payload.playgroundId, "members.doodleId": payload.doodleId }, { $set: { "members.$[].active": true } });
+        await Playgrounds.updateOne({ playgroundId: payload.playgroundId, "members.doodleId": payload.doodleId }, { $set: { "members.$.active": true } });
         onlineUsers.set(`${payload.doodleId}+${payload.playgroundId}`, socket.id);
         onlineId.set(socket.id, `${payload.doodleId}+${payload.playgroundId}`);
         socketIdToPlayground.set(socket.id, `${payload.owner}+${payload.playgroundId}`);
@@ -103,7 +104,7 @@ io.on("connection", (socket) => {
             if (playground.members[i].active === false) {
                 continue;
             }
-            const drawerWords = ["apple", "phone", "robot"];
+            const drawerWords = randomWords({ exactly: 3, minLength: 4, maxLength: 6 });
             playgroundWords.set(payload.playgroundId, drawerWords[0]);
             await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
                 "recieve-choose-a-word", { drawer: playground.members[i], drawerWords: drawerWords });
@@ -112,11 +113,14 @@ io.on("connection", (socket) => {
             await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { drawerWord: playgroundWords.get(payload.playgroundId), canvasEnableTime: [date.getHours(), date.getMinutes(), date.getSeconds()] } });
             await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
                 "recieve-canvas-enable", { drawer: playground.members[i], drawerWord: playgroundWords.get(payload.playgroundId) });
-            await new Promise(res => setTimeout(res, 120000));
+            await new Promise(res => setTimeout(res, 10000));
         }
-        await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { "members.$[].score": 0 } });
+        const PlaygroundInfo = await Playgrounds.findOne({ playgroundId: payload.playgroundId });
+        let rankingsData = PlaygroundInfo.members;
+        await rankingsData.sort((a, b) => parseFloat(b.totalScore) - parseFloat(a.totalScore));
+        await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { "members.$[].score": 0, rankingsData: rankingsData } });
         await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
-            "recieve-game-ended", { drawer: playground.members[i], drawerWord: playgroundWords.get(payload.playgroundId) });
+            "recieve-game-ended", { rankingsData: rankingsData });
         await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { gameInProgress: false, "members.$[].score": 0, drawerWord: "" } });
     });
 
@@ -163,4 +167,14 @@ io.on("connection", (socket) => {
         socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
             "recieve-message", payload);
     });
-});
+
+    socket.on("send-clear-chat", async (payload) => {
+        socket.to(`${payload.owner}+${payload.playgroundId}`).emit(
+            "recieve-clear-chat", payload);
+    });
+
+    socket.on("send-clear-chat-request", async (payload) => {
+        socket.to(onlineUsers.get(`${payload.owner}+${payload.playgroundId}`)).emit(
+            "recieve-clear-chat-request", payload);
+    });
+})
