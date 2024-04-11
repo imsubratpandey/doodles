@@ -76,6 +76,21 @@ export default function Manager({ toast, toastOptions, rankingsData, setRankings
         const payload = { playgroundId: playgroundDetails.playgroundId, drawerWord: drawerWords[i] }
         socketConnection.emit("send-set-word", payload);
     };
+    const copyInviteLink = async () => {
+        var url = window.location.href;
+        if (url.startsWith("http://")) {
+            url = url.substring(7);
+        }
+        else if (url.startsWith("https://")) {
+            url = url.substring(8);
+        }
+        navigator.clipboard.writeText(url);
+        toast.info("Invite Link Copied to Clipboard", toastOptions);
+    };
+    const copyGroundId = async () => {
+        navigator.clipboard.writeText(playgroundDetails.playgroundId);
+        toast.info("Ground Id Copied to Clipboard", toastOptions);
+    };
     return (
         <>
             <div id="managerContainer">
@@ -162,8 +177,8 @@ export default function Manager({ toast, toastOptions, rankingsData, setRankings
                                 (user?.doodleId === playgroundDetails?.owner) ?
                                     <>
                                         <div className="managerButtons">
-                                            <button className="inviteButton">Copy Invite Link</button>
-                                            <button className="inviteButton">Copy Ground Id</button>
+                                            <button className="inviteButton" onClick={() => { copyInviteLink(); }}>Copy Invite Link</button>
+                                            <button className="inviteButton" onClick={() => { copyGroundId(); }}>Copy Ground Id</button>
                                             <button className="startButton" onClick={startGame}>{(roundPlayed === 0) ? "Start Game" : "Play Next Round"}</button>
                                         </div>
                                     </>
@@ -176,7 +191,7 @@ export default function Manager({ toast, toastOptions, rankingsData, setRankings
                             }
                         </>
                 }
-            </div>
+            </div >
         </>
     )
 }
