@@ -113,7 +113,7 @@ io.on("connection", (socket) => {
             await Playgrounds.updateOne({ playgroundId: payload.playgroundId }, { $set: { drawerWord: playgroundWords.get(payload.playgroundId), canvasEnableTime: [date.getHours(), date.getMinutes(), date.getSeconds()] } });
             await socket.nsp.to(`${payload.owner}+${payload.playgroundId}`).emit(
                 "recieve-canvas-enable", { drawer: playground.members[i], drawerWord: playgroundWords.get(payload.playgroundId) });
-            await new Promise(res => setTimeout(res, 10000));
+            await new Promise(res => setTimeout(res, 120000));
         }
         const PlaygroundInfo = await Playgrounds.findOne({ playgroundId: payload.playgroundId });
         let rankingsData = PlaygroundInfo.members;

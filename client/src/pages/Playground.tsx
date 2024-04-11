@@ -316,7 +316,7 @@ export default function Playground() {
                 }
             </div>
             <div id={(showPlaygroundLoadingWindow === false) ? "playgroundContainerFlex" : "playgroundContainerNone"}>
-                <div id="drawingBox" ref={drawingCanvasBoxRef}>
+                <div id={(canDraw === false) ? "drawingBox" : "drawingBoxFull"} ref={drawingCanvasBoxRef}>
                     {
                         (showCanvas === true) ?
                             <>
